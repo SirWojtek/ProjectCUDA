@@ -1,7 +1,8 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
 // Device code
 __global__ void VecAdd(float* A, float* B, float* C, int N)
@@ -19,6 +20,7 @@ int main()
 	// Allocate input vectors h_A and h_B in host memory
 	float* h_A = (float*)malloc(size);
 	float* h_B = (float*)malloc(size);
+	float* h_C = (float*)malloc(size);
 
 	// Initialize input vectors
 	// ...
@@ -49,4 +51,5 @@ int main()
 	// Free host memory
 	free(h_A);
 	free(h_B);
+	free(h_C);
 }
