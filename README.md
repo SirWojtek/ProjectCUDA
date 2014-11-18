@@ -16,3 +16,6 @@ http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html#axzz
 
 #####Windows:#####
 http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-microsoft-windows/index.html#axzz3IZQoek6w
+
+@Gettor:
+Melduję skompilowanie testu
