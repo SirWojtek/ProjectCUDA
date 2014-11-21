@@ -38,6 +38,13 @@ Please assign yourself to one task. I suggest to start coding in newly created f
 **Take notice, that we should have basic implementation finished until 28.11.2014.**
 If there is any question, you are free to contact me:)
 
+Person       |     Task
+-------------|----------------
+SirWojtek    | not assigned
+Gettor       | not assigned
+bendzasky    | not assigned
+
+
 ###Contact###
 
 Please complete contact list below:
