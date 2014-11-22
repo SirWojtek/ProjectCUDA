@@ -31,7 +31,7 @@ http://www.cise.ufl.edu/research/sparse/matrices/
     - if km find an error, it should compute value again (with another error check?).
 3. Matrix loading.
     - loading from file,
-    - format can be choosen from one from repository site,
+    - format can be chosen from one from repository site,
     - loaded matrix should be placed in 2D matrix in host memory.
 
 Please assign yourself to one task. I suggest to start coding in newly created file SparseMatrix.cu.
@@ -52,5 +52,5 @@ Please complete contact list below:
 GitHub Nick        |        mail address     |    telephone
 -------------------|-------------------------|----------------------
 SirWojtek          |     momatoku@gmail.com  |   781 842 090
-Gettor             |                         |
+Gettor             |    sdobroc@gmail.com    |   601 553 817
 bendzasky          |                         |
