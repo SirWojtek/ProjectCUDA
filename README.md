@@ -42,7 +42,7 @@ Person       |     Task
 -------------|----------------
 SirWojtek    | not assigned
 Gettor       | not assigned
-bendzasky    | not assigned
+bendzasky    | 1
 
 
 ###Contact###
