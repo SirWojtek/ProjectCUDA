@@ -41,7 +41,7 @@ If there is any question, you are free to contact me:)
 Person       |     Task
 -------------|----------------
 SirWojtek    | not assigned
-Gettor       | not assigned
+Gettor       | 3
 bendzasky    | 1
 
 
