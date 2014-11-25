@@ -41,7 +41,7 @@ If there is any question, you are free to contact me:)
 Person       |     Task
 -------------|----------------
 SirWojtek    | 2
-Gettor       | 3
+Gettor       | 3 - completed. Matrix chosen: http://www.cise.ufl.edu/research/sparse/matrices/HB/bcsstk03.html
 bendzasky    | 1
 
 
