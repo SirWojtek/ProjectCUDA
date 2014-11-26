@@ -1,12 +1,14 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
+#include <string>
+
 class Matrix
 {
 private:
 	Matrix() { };
 public:
-	Matrix(char* filename);
+	Matrix(std::string filename);
 	~Matrix();
 	int getRows();
 	int getColumns();

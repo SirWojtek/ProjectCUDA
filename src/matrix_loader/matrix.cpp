@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <string>
+
 #include "matrix.hpp"
 
-Matrix::Matrix(char* filename)
+Matrix::Matrix(std::string filename)
 {
 	std::ifstream fin(filename);
 	int M, N, L;

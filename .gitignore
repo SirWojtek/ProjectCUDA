@@ -1,2 +1,8 @@
 *.sublime-project
 *.sublime-workspace
+*.opensdf
+*.sdf
+*.vcxproj.filters
+*.vcxproj.user
+*.pdb
+bin/*
