@@ -11,6 +11,7 @@ __device__ int getGlobalIdx_2D_2D()
 {
 	int blockId = blockIdx.x + blockIdx.y * gridDim.x;
 	int threadId = blockId * (blockDim.x * blockDim.y) + (threadIdx.y * blockDim.x) + threadIdx.x;
+	
 	return threadId;
 }
 
@@ -39,7 +40,7 @@ void fillErrorMap(error * const errorMap, const int numRows, const int numCols)
 {
 	for (int i = 0; i < numRows*numCols; i++)
 	{
-		errorMap[i] = 10000000;
+		errorMap[i] = 10;
 	}
 }
 
@@ -108,8 +109,9 @@ void startKernel()
 	gpuErrchk(cudaMemcpy(d_in2, h_in2_float, ARRAY_BYTES, cudaMemcpyHostToDevice));
 	gpuErrchk(cudaMemcpy(d_error, h_error, ARRAY_BYTES, cudaMemcpyHostToDevice));
 
-
-	matrixOperation <<< (4,4,1), (28,28,1) >>>(d_in1, d_in2, d_out, d_error);
+	const dim3 gridSize(112, 112, 1);  
+	const dim3 blockSize(1, 1, 1);  
+	matrixOperation <<< gridSize, blockSize >>>(d_in1, d_in2, d_out, d_error);
 	
 	gpuErrchk(cudaPeekAtLastError());
 	gpuErrchk(cudaDeviceSynchronize());
@@ -117,7 +119,7 @@ void startKernel()
 	gpuErrchk(cudaMemcpy(h_out, d_out, ARRAY_BYTES, cudaMemcpyDeviceToHost));
 	
 	std::cout << "out:" << std::endl;
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 112; i++)
 		std::cout << "h_out -> " << h_out[i] << std::endl;
 
 	cudaFree(d_in1);
