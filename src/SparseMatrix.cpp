@@ -1,14 +1,9 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-
-
-__global__ void kernel()
-{
-    // kernel code
-}
+#include "kernel.cuh"
 
 
 int main()
 {
-    // task manager code
+	startKernel(); // example - to be removed
 }
