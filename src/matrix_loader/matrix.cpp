@@ -62,3 +62,8 @@ double Matrix::getV(int row, int col)
 	int arrayPos = (row-1)*rows_ + col - 1;
 	return matrix_[arrayPos];
 }
+
+double * Matrix::getMatrix() // PB
+{
+	return this->matrix_;
+}

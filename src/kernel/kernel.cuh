@@ -17,11 +17,11 @@ __device__ void injectError(matrix * const d_inputMatrix, const error * const d_
 
 // kernel performing operations on two matrices
 template<class matrix, class error>
-__global__ void matrixOperation(const matrix  * const d_inputMatrix1, const matrix  * const d_inputMatrix2, matrix * const d_outputMatrix, int numRows, const error * const d_errorMap);
+__global__ void matrixOperation(const matrix  * const d_inputMatrix1, const matrix  * const d_inputMatrix2, matrix * const d_outputMatrix, const error * const d_errorMap);
 
 // fill error map with values
 template <class error>
-void fillErrorMap(error * const errorMap);
+void fillErrorMap(error * const errorMap, const int numRows, const int numCols);
 
 // example kernel execution
 void startKernel();

@@ -1,13 +1,11 @@
-
-// musialem ustawic compute_11 z 20 w project properties-> cuda c/c++ -> device ->code generation
-
-
-
 #include "kernel.cuh"
 
+#include <assert.h>
 #include <iostream>
 #include <stdio.h>
 #include "gpuErrchk.cuh"
+
+#include "..\matrix_loader\matrix.hpp"
 
 __device__ int getGlobalIdx_2D_2D()
 {
@@ -29,7 +27,7 @@ __device__ void injectError(matrix * const d_inputMatrix, const error * const d_
 }
 
 template<class matrix, class error>
-__global__ void matrixOperation(const matrix  * const d_inputMatrix1, const matrix  * const d_inputMatrix2, matrix * const d_outputMatrix, int numRows, const error * const d_errorMap)
+__global__ void matrixOperation(const matrix  * const d_inputMatrix1, const matrix  * const d_inputMatrix2, matrix * const d_outputMatrix, const error * const d_errorMap)
 {
 	int index = getGlobalIdx_2D_2D();
 	d_outputMatrix[index] = sumMatrix(d_inputMatrix1, d_inputMatrix2, index);
@@ -37,71 +35,96 @@ __global__ void matrixOperation(const matrix  * const d_inputMatrix1, const matr
 }
 
 template <class error>
-void fillErrorMap(error * const errorMap, const int numRows)
+void fillErrorMap(error * const errorMap, const int numRows, const int numCols)
 {
-	for (int i = 0; i < numRows; i++)
+	for (int i = 0; i < numRows*numCols; i++)
 	{
-		errorMap[i] = 1;
+		errorMap[i] = 10000000;
 	}
 }
 
+
 void startKernel()
 {
-	const int ARRAY_SIZE = 10;
+	// C++11 not supported by CUDA (can't use smart pointers)
+	Matrix * h_in1 = new Matrix("matrixes/bcsstk03.mtx");
+	Matrix * h_in2 = new Matrix("matrixes/bcsstk03.mtx");
+
+	// Make sure arrays have same dimensions
+	assert(h_in1->getColumns() == h_in2->getColumns());
+	assert(h_in1->getRows() == h_in2->getRows());
+
+	const int ARRAY_SIZE = h_in1->getColumns()*h_in1->getRows();
 	const int ARRAY_BYTES = ARRAY_SIZE * sizeof(float);
 
-	// generate the input array on the host
-	float h_in[ARRAY_SIZE];
-	for (int i = 0; i < ARRAY_SIZE; i++) {
-		h_in[i] = float(i) + 1;
 
+	// CUDA SM 1.1 doesn't support double, need to convert to floats
+	float * h_in1_float = new float[ARRAY_SIZE];
+	for (int i = 0; i < 112 * 112; i++)
+	{
+		h_in1_float[i] = static_cast<float>(h_in1->getMatrix()[i]);
 	}
-	float h_out[ARRAY_SIZE];
 
-	float h_error[ARRAY_SIZE];
-	fillErrorMap(h_error, ARRAY_SIZE);
+	float * h_in2_float = new float[ARRAY_SIZE];
+	for (int i = 0; i < 112 * 112; i++)
+	{
+		h_in2_float[i] = static_cast<float>(h_in1->getMatrix()[i]);
+	}
 
-	// declare GPU memory pointers
+
+
+	float * h_out = new float[ARRAY_SIZE];
+
+	float * h_error = new float[ARRAY_SIZE];
+	fillErrorMap(h_error, h_in1->getRows(), h_in1->getColumns());
+
+
+	
+
+
+	for (int i = 0; i < 10; i++)
+	{	std::cout << "h1  -> " << h_in1_float[i] << "; ";
+		std::cout << "h2  -> " << h_in2_float[i] << "; ";
+		std::cout << "err -> " << h_error[i] << ";";
+
+		std::cout << "suma ->" << h_in1_float[i] + h_in1_float[i] + h_error[i] << std::endl;
+	}
+
 	float * d_in1;
 	float * d_in2;
 	float * d_out;
 	float * d_error;
+	
 
-	// allocate GPU memory
 	gpuErrchk(cudaMalloc((void**)&d_in1, ARRAY_BYTES));
 	gpuErrchk(cudaMalloc((void**)&d_in2, ARRAY_BYTES));
 	gpuErrchk(cudaMalloc((void**)&d_out, ARRAY_BYTES));
 	gpuErrchk(cudaMalloc((void**)&d_error, ARRAY_BYTES));
 
-	std::cout << "Matrix = " << std::endl;
-	for (int i = 0; i < ARRAY_SIZE; i++) {
-		std::cout << h_in[i] << std::endl;
 
-	}
-
-
-	// transfer the array to the GPU
-	gpuErrchk(cudaMemcpy(d_in1, h_in, ARRAY_BYTES, cudaMemcpyHostToDevice));
-	gpuErrchk(cudaMemcpy(d_in2, h_in, ARRAY_BYTES, cudaMemcpyHostToDevice));
+	//gpuErrchk(cudaMemcpy(d_in1, h_in1->getMatrix(), ARRAY_BYTES, cudaMemcpyHostToDevice));
+	//gpuErrchk(cudaMemcpy(d_in2, h_in2->getMatrix(), ARRAY_BYTES, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(d_in1, h_in1_float, ARRAY_BYTES, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(d_in2, h_in2_float, ARRAY_BYTES, cudaMemcpyHostToDevice));
 	gpuErrchk(cudaMemcpy(d_error, h_error, ARRAY_BYTES, cudaMemcpyHostToDevice));
 
-	// launch the kernel
-	matrixOperation <<< 1, ARRAY_SIZE >>>(d_in1, d_in2, d_out, ARRAY_SIZE, d_error);
+
+	matrixOperation <<< (4,4,1), (28,28,1) >>>(d_in1, d_in2, d_out, d_error);
+	
 	gpuErrchk(cudaPeekAtLastError());
 	gpuErrchk(cudaDeviceSynchronize());
 
-	// copy back the result array to the CPU
 	gpuErrchk(cudaMemcpy(h_out, d_out, ARRAY_BYTES, cudaMemcpyDeviceToHost));
-
-	// print out the resulting array
-	std::cout << "Matrix + Matrix + Error =" << std::endl;
-	for (int i = 0; i < ARRAY_SIZE; i++) {
-		std::cout << h_out[i] << std::endl;
-	}
-
+	
+	std::cout << "out:" << std::endl;
+	for (int i = 0; i < 10; i++)
+		std::cout << "h_out -> " << h_out[i] << std::endl;
 
 	cudaFree(d_in1);
 	cudaFree(d_in2);
 	cudaFree(d_out);
+	cudaFree(d_error);
+
+
 }
 
