@@ -1,5 +1,4 @@
-#ifndef MATRIX_HPP
-#define MATRIX_HPP
+#pragma once
 
 #include <string>
 
@@ -20,5 +19,3 @@ private:
 	int nonZeroValues_;
 	double* matrix_;
 };
-
-#endif //  MATRIX_HPP
