@@ -73,30 +73,35 @@ void startKernel()
 	}
 
 
-
+	// output array
 	float * h_out = new float[ARRAY_SIZE];
 
+	// error mask array
 	float * h_error = new float[ARRAY_SIZE];
 	fillErrorMap(h_error, h_in1->getRows(), h_in1->getColumns());
 
 
-	
-
-
-	for (int i = 0; i < 10; i++)
-	{	std::cout << "h1  -> " << h_in1_float[i] << "; ";
-		std::cout << "h2  -> " << h_in2_float[i] << "; ";
-		std::cout << "err -> " << h_error[i] << ";";
-
-		std::cout << "suma ->" << h_in1_float[i] + h_in1_float[i] + h_error[i] << std::endl;
+	// print example values
+	const int exampleSize = 4;
+	int example[exampleSize] = { 2, 0, 3 * 112, 112*112-1 };
+	std::cout << "Example:" << std::endl;
+	std::cout << "input:" << std::endl;
+	for (int i = 0; i < exampleSize; i++)
+	{	
+		std::cout << "ex." << i+1 << " ";
+		std::cout << "in1  -> " << h_in1_float[example[i]] << "; ";
+		std::cout << "in2  -> " << h_in2_float[example[i]] << "; ";
+		std::cout << "err -> " << h_error[example[i]] << "; ";
+		std::cout << "sum ->" << h_in1_float[example[i]] + h_in1_float[example[i]] + h_error[example[i]] << std::endl;
 	}
 
+
+	// device arrays
 	float * d_in1;
 	float * d_in2;
 	float * d_out;
 	float * d_error;
 	
-
 	gpuErrchk(cudaMalloc((void**)&d_in1, ARRAY_BYTES));
 	gpuErrchk(cudaMalloc((void**)&d_in2, ARRAY_BYTES));
 	gpuErrchk(cudaMalloc((void**)&d_out, ARRAY_BYTES));
@@ -109,24 +114,35 @@ void startKernel()
 	gpuErrchk(cudaMemcpy(d_in2, h_in2_float, ARRAY_BYTES, cudaMemcpyHostToDevice));
 	gpuErrchk(cudaMemcpy(d_error, h_error, ARRAY_BYTES, cudaMemcpyHostToDevice));
 
-	const dim3 gridSize(112, 112, 1);  
+	// launch kernel
+	const dim3 gridSize(h_in1->getColumns(), h_in2->getRows(), 1);  
 	const dim3 blockSize(1, 1, 1);  
 	matrixOperation <<< gridSize, blockSize >>>(d_in1, d_in2, d_out, d_error);
 	
-	gpuErrchk(cudaPeekAtLastError());
-	gpuErrchk(cudaDeviceSynchronize());
+	gpuErrchk(cudaPeekAtLastError());   // for debugging
+	gpuErrchk(cudaDeviceSynchronize()); // not sure if need to synchronize
 
+	// get results
 	gpuErrchk(cudaMemcpy(h_out, d_out, ARRAY_BYTES, cudaMemcpyDeviceToHost));
 	
-	std::cout << "out:" << std::endl;
-	for (int i = 0; i < 112; i++)
-		std::cout << "h_out -> " << h_out[i] << std::endl;
+	std::cout << "output:" << std::endl;
+	for (int i = 0; i < exampleSize; i++)
+	{	
+		std::cout << "ex." << i+1 << " ";
+		std::cout << "out -> " << h_out[example[i]] << std::endl;
+	}
 
+
+	// cleaning
 	cudaFree(d_in1);
 	cudaFree(d_in2);
 	cudaFree(d_out);
 	cudaFree(d_error);
-
-
+	delete h_in1;
+	delete h_in2;
+	delete[] h_in1_float;
+	delete[] h_in2_float;
+	delete[] h_out;
+	delete[] h_error;
 }
 
