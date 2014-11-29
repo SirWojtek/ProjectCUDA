@@ -22,27 +22,38 @@ http://www.cise.ufl.edu/research/sparse/matrices/
 
 ###Tasks###
 
-1. Kernel implementation
+####Already done####
+
+Kernel implementation - done
     - kernel should make addition of two elements, position of added elements depends on kernel index,
     - kernel must be able to inject error, there is possibility of multiple error across kernels.
-2. Kernel manager implementation.
-    - kernel manager task is to divide task to kernels, basing on input data size,
-    - kernel manager should have functionality to trigger additional redundancy computing to check for errors,
-    - if km find an error, it should compute value again (with another error check?).
-3. Matrix loading.
+Matrix loading - completed. Matrix chosen: http://www.cise.ufl.edu/research/sparse/matrices/HB/bcsstk03.html.
     - loading from file,
     - format can be chosen from one from repository site,
     - loaded matrix should be placed in 2D matrix in host memory.
 
-Please assign yourself to one task. I suggest to start coding in newly created file SparseMatrix.cu.
-**Take notice, that we should have basic implementation finished until 28.11.2014.**
+####To do####
+
+1. Kernel manager implementation
+    - kernel manager task is to divide task to kernels, basing on input data size,
+    - kernel manager should have functionality to trigger additional redundancy computing to check for errors,
+2. Time measurement
+	- how to measure kernel execution time?
+	- implementation of time measurement tool
+3. Error recognition
+	- assume you have result matrix computed by CUDA,
+	- check for errors that may appear while computing
+
+
+Please assign yourself to one task.
+**Next deadline: *05.12.2014*
 If there is any question, you are free to contact me:)
 
 Person       |     Task
 -------------|----------------
-SirWojtek    | 2
-Gettor       | 3 - completed. Matrix chosen: http://www.cise.ufl.edu/research/sparse/matrices/HB/bcsstk03.html
-bendzasky    | 1
+SirWojtek    | 1
+Gettor       | -
+bendzasky    | -
 
 
 ###Contact###
