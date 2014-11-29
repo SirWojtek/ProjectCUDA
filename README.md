@@ -46,7 +46,7 @@ Matrix loading - completed. Matrix chosen: http://www.cise.ufl.edu/research/spar
 
 
 Please assign yourself to one task.
-**Next deadline: *05.12.2014*
+**Next deadline: 05.12.2014**
 If there is any question, you are free to contact me:)
 
 Person       |     Task
