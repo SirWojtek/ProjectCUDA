@@ -13,6 +13,7 @@ public:
 	int getColumns();
 	int getNonZeroValuesAmount();
 	double getV(int row, int col);
+	double * getMatrix(); // PB - lazy solution
 private:
 	int rows_;
 	int columns_;
