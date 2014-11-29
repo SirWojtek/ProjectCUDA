@@ -25,14 +25,14 @@ http://www.cise.ufl.edu/research/sparse/matrices/
 ####Already done####
 
 Kernel implementation **done**
-    * kernel should make addition of two elements, position of added elements depends on kernel index,
-    * kernel must be able to inject error, there is possibility of multiple error across kernels.
+- kernel should make addition of two elements, position of added elements depends on kernel index,
+- kernel must be able to inject error, there is possibility of multiple error across kernels.
 
 
 Matrix loading **completed. Matrix chosen: http://www.cise.ufl.edu/research/sparse/matrices/HB/bcsstk03.html**
-    * loading from file,
-    * format can be chosen from one from repository site,
-    * loaded matrix should be placed in 2D matrix in host memory.
+- loading from file,
+- format can be chosen from one from repository site,
+- loaded matrix should be placed in 2D matrix in host memory.
 
 
 ####To do####
@@ -49,6 +49,8 @@ Matrix loading **completed. Matrix chosen: http://www.cise.ufl.edu/research/spar
 
 
 Please assign yourself to one task.
+
+
 **Next deadline: 05.12.2014**
 If there is any question, you are free to contact me:)
 
