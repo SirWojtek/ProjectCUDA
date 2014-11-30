@@ -58,7 +58,7 @@ Person       |     Task
 -------------|----------------
 SirWojtek    | 1
 Gettor       | -
-bendzasky    | -
+bendzasky    | 3
 
 
 ###Contact###
