@@ -19,16 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="invoker\KernelInvoker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="matrix_loader\matrix.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="kernel\gpuErrchk.cuh" />
-    <ClInclude Include="kernel\kernel.cuh" />
+    <ClInclude Include="invoker\KernelInvoker.hpp" />
+    <ClInclude Include="invoker\kernel\gpuErrchk.cuh" />
+    <ClInclude Include="invoker\kernel\kernel.cuh" />
     <ClInclude Include="matrix_loader\matrix.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="kernel\kernel.cu" />
+    <CudaCompile Include="invoker\kernel\kernel.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="matrixes\bcsstk03.mtx" />
@@ -94,6 +96,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -104,6 +107,10 @@
       <Command>echo copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"
 copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <CompileOut>$(IntDir)/%(RelativeDir)/%(Filename).obj</CompileOut>
+      <CodeGeneration>compute_11,sm_11</CodeGeneration>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

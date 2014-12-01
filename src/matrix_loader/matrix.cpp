@@ -33,22 +33,22 @@ Matrix::~Matrix()
 	delete[] matrix_;
 }
 
-int Matrix::getRows()
+int Matrix::getRows() const
 {
 	return rows_;
 }
 
-int Matrix::getColumns()
+int Matrix::getColumns() const
 {
 	return columns_;
 }
 
-int Matrix::getNonZeroValuesAmount()
+int Matrix::getNonZeroValuesAmount() const
 {
 	return nonZeroValues_;
 }
 
-double Matrix::getV(int row, int col)
+double Matrix::getV(int row, int col) const
 {
 	if (row == 0 || col == 0){
 		std::cout << "Matrix::getV - either row or column argument is zero" << std::endl;
@@ -63,7 +63,7 @@ double Matrix::getV(int row, int col)
 	return matrix_[arrayPos];
 }
 
-double * Matrix::getMatrix() // PB
+double * Matrix::getMatrix() const // PB
 {
 	return this->matrix_;
 }

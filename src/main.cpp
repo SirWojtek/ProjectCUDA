@@ -1,27 +1,42 @@
 #include <iostream>
-#include <memory>
+#include <string>
+#include <exception>
 
-#include "matrix_loader\matrix.hpp"
-#include "kernel\kernel.cuh"
+#include "device_launch_parameters.h"
+#include "invoker\KernelInvoker.hpp"
 
-using namespace std;
+void run()
+{
+	Matrix h_in1("matrixes/bcsstk03.mtx");
+	Matrix h_in2("matrixes/bcsstk03.mtx");
+	Matrix error("matrixes/bcsstk03.mtx");
+
+	dim3 gridSize(16, 16);
+
+	KernelInvoker invoker(gridSize, 0.0);
+
+	invoker.compute(h_in1, h_in2, error);
+}
 
 int main()
 {
-	shared_ptr<Matrix> x = make_shared<Matrix>("matrixes/bcsstk03.mtx");
-	cout << "Examples for bad behaviour:" << endl;
-	cout << x->getV(0, 0) << endl;
-	cout << x->getV(122, 122) << endl;
-	cout << "____________________________" << endl;
-	cout << "Examples for good behaviour:" << endl;
-	cout << x->getV(1, 1) << endl; // first element, which we would normally get by Matrix[0][0]
-	cout << x->getV(4, 1) << endl;
-	cout << x->getV(112, 112) << endl;
-	cout << "Check bcsstk03.mtx file for correctness of these values" << endl;
+	try
+	{
+		run();
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Caught std exception: " << e.what();
+	}
+	catch (const std::string& e)
+	{
+		std::cerr << "Caught string exception: " << e;
+	}
+	catch (...)
+	{
+		std::cerr << "Caught unknown exception";
+	}
 
-	cout << endl;
-	startKernel();
-
-	cout << endl;
+	std::cout << std::endl;
 	system("pause");
 }

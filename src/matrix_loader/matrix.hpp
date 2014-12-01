@@ -9,11 +9,11 @@ private:
 public:
 	Matrix(std::string filename);
 	~Matrix();
-	int getRows();
-	int getColumns();
-	int getNonZeroValuesAmount();
-	double getV(int row, int col);
-	double * getMatrix(); // PB - lazy solution
+	int getRows() const;
+	int getColumns() const;
+	int getNonZeroValuesAmount() const;
+	double getV(int row, int col) const;
+	double * getMatrix() const; // PB - lazy solution
 private:
 	int rows_;
 	int columns_;

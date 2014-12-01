@@ -1,8 +1,6 @@
-#ifndef GPUERRCHK_CUH
-#define GPUERRCHK_CUH
+#pragma once
 
-#include <stdio.h>
-#include <iostream>
+#include <sstream>
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
@@ -12,9 +10,9 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 {
 	if (code != cudaSuccess)
 	{
-		fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-		if (abort) exit(code);
+		std::ostringstream s;
+		s << "GPUassert: " << cudaGetErrorString(code) << " " << file << " "
+			<< line << " " << std::endl;
+		throw s.str();
 	}
 }
-
-#endif
