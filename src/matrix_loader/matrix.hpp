@@ -19,11 +19,11 @@ public:
 	int getRows() const;
 	int getColumns() const;
 	int getNonZeroValuesAmount() const;
-	double getV(int row, int col) const;
-	double * getMatrix() const; // PB - lazy solution
+	float getV(int row, int col) const;
+	float * getMatrix() const; // PB - lazy solution
 private:
 	int rows_;
 	int columns_;
 	int nonZeroValues_;
-	double* matrix_;
+	float* matrix_;
 };

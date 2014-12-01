@@ -8,19 +8,18 @@
 Matrix::Matrix(std::string filename)
 {
 	std::ifstream fin(filename);
-	int M, N, L;
 	while (fin.peek() == '%') fin.ignore(2048, '\n'); // Ignore comments in .mtx file
 
 	fin >> rows_ >> columns_ >> nonZeroValues_;
 
-	matrix_ = new double[rows_*columns_];
+	matrix_ = new float[rows_*columns_];
 	std::fill(matrix_, matrix_ + rows_*columns_, 0.);
 
 	// Read the data
 	for (int l = 0; l < nonZeroValues_; l++)
 	{
 		int row, col;
-		double data;
+		float data;
 		fin >> row >> col >> data;
 		matrix_[(col-1) + (row-1)*rows_] = data;
 	}
@@ -33,7 +32,7 @@ Matrix::Matrix(const Matrix &object)
 	this->rows_ = object.getRows();
 	this->columns_ = object.getColumns();
 	this->nonZeroValues_ = object.getNonZeroValuesAmount();
-	this->matrix_ = new double[rows_ * columns_];
+	this->matrix_ = new float[rows_ * columns_];
 
 	for (int i = 0; i < rows_*columns_; i++)
 	{
@@ -87,7 +86,7 @@ int Matrix::getNonZeroValuesAmount() const
 	return nonZeroValues_;
 }
 
-double Matrix::getV(int row, int col) const
+float Matrix::getV(int row, int col) const
 {
 	if (row == 0 || col == 0){
 		std::cout << "Matrix::getV - either row or column argument is zero" << std::endl;
@@ -102,7 +101,7 @@ double Matrix::getV(int row, int col) const
 	return matrix_[arrayPos];
 }
 
-double * Matrix::getMatrix() const // PB
+float * Matrix::getMatrix() const // PB
 {
 	return this->matrix_;
 }
