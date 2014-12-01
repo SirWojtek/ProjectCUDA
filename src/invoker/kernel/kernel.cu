@@ -49,11 +49,16 @@ void fillErrorMap(float * const errorMap, const int numRows, const int numCols)
 
 void runKernel(dim3 gridSize, dim3 blockSize, float* in1, float* in2, float* out)
 {
+	//std::cout << gridSize.x << gridSize.y << gridSize.z << "\n";
+	//std::cout << blockSize.x << blockSize.y << blockSize.z << "\n";
+
 	matrixOperation <<< gridSize, blockSize >>>(in1, in2, out);
+	
 }
 
 void runKernelWithError(dim3 gridSize, dim3 blockSize, float* in1, float* in2,
 	float* out, float* error)
 {
+	
 	matrixOperation <<< gridSize, blockSize >>>(in1, in2, out, error);
 }

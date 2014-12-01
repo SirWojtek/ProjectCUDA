@@ -41,9 +41,12 @@ void KernelInvoker::compute(const Matrix& m1, const Matrix& m2, const Matrix& er
 	initDevice();
 	copyToDevice();
 
-	const dim3 gridSize = getGridSize();
-	runKernel(gridSize, blockSize_, deviceTable1_, deviceTable2_, deviceOutputTable_);
-
+	//const dim3 gridSize = getGridSize();
+	const dim3 gridSize(m1.getColumns(), m1.getRows(), 1);
+	const dim3 blockSize(1, 1, 1);
+	
+	runKernel(gridSize, (1, 1 ,1), deviceTable1_, deviceTable2_, deviceOutputTable_);
+	gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
 	copyResultToHost();
 
 	// TODO: w Matrix metoda pozwalajaca wczytac z tablicy dwuwymiarowej
@@ -66,6 +69,10 @@ void KernelInvoker::initHost(const Matrix& m)
 	hostTable1_ = new float[arraySize_];
 	hostTable2_ = new float[arraySize_];
 	hostOutputTable_ = new float[arraySize_];
+
+	for (int i = 0; i < arraySize_; i++) // filling with 0 for clarity
+		hostOutputTable_[i] = 0;
+
 	hostErrorTable_ = new float[arraySize_];
 }
 
@@ -81,7 +88,8 @@ void KernelInvoker::readToFloatTable(const Matrix& m1, const Matrix& m2, const M
 
 void KernelInvoker::initDevice()
 {
-	arrayBytes_ = getArraySize();
+	//arrayBytes_ = getArraySize();
+	arrayBytes_ = arraySize_ * sizeof(float);
 
 	gpuErrchk(cudaMalloc((void**)&deviceTable1_, arrayBytes_));
 	gpuErrchk(cudaMalloc((void**)&deviceTable2_, arrayBytes_));
@@ -116,7 +124,7 @@ dim3 KernelInvoker::getGridSize()
 
 void KernelInvoker::copyResultToHost()
 {
-	gpuErrchk(cudaMemcpy(hostOutputTable_, deviceOutputTable_, 1, cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(hostOutputTable_, deviceOutputTable_, arrayBytes_, cudaMemcpyDeviceToHost));
 }
 
 void KernelInvoker::printResult()
