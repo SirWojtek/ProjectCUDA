@@ -57,7 +57,7 @@ If there is any question, you are free to contact me:)
 Person       |     Task
 -------------|----------------
 SirWojtek    | 1
-Gettor       | -
+Gettor       | 2 + 100% hate on Visual Studio
 bendzasky    | 3
 
 
