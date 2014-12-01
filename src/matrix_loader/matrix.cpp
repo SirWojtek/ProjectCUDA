@@ -28,6 +28,45 @@ Matrix::Matrix(std::string filename)
 	fin.close();
 }
 
+Matrix::Matrix(const Matrix &object)
+{
+	this->rows_ = object.getRows();
+	this->columns_ = object.getColumns();
+	this->nonZeroValues_ = object.getNonZeroValuesAmount();
+	this->matrix_ = new double[rows_ * columns_];
+
+	for (int i = 0; i < rows_*columns_; i++)
+	{
+		this->matrix_[i] = object.matrix_[i];
+	}
+
+}
+
+
+Matrix& Matrix::operator=(Matrix rhs)
+{
+	this->swap(*this, rhs);
+	return *this;
+}
+
+Matrix& Matrix::operator+=(const Matrix &rhs)
+{
+	for (int i = 0; i < columns_*rows_; i++)
+		matrix_[i] += rhs.matrix_[i];
+	return *this;
+}
+
+
+void Matrix::swap(Matrix &matrix1, Matrix &matrix2)
+{
+	using std::swap;
+
+	swap(matrix1.columns_, matrix2.columns_);
+	swap(matrix1.rows_, matrix2.rows_);
+	swap(matrix1.nonZeroValues_, matrix2.nonZeroValues_);
+	swap(matrix1.matrix_, matrix2.matrix_);
+}
+
 Matrix::~Matrix()
 {
 	delete[] matrix_;
