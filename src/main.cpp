@@ -5,6 +5,18 @@
 #include "device_launch_parameters.h"
 #include "invoker\KernelInvoker.hpp"
 
+#define FireMatrixDebugSession "false"
+
+void MatrixTest()
+{
+	if (FireMatrixDebugSession == "true")
+	{
+		Matrix::matrixIntegrationTest();
+		system("pause");
+		exit(0);
+	}
+}
+
 void run()
 {
 	Matrix h_in1("matrixes/bcsstk03.mtx");
@@ -21,6 +33,7 @@ void run()
 
 int main()
 {
+	MatrixTest();
 	try
 	{
 		run();

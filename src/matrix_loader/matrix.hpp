@@ -9,6 +9,7 @@ private:
 public:
 	Matrix(std::string filename);
 	Matrix(float *inputArray, int columns, int rows);
+	Matrix(float ** D2matrix, int rows, int cols);
 	Matrix(const Matrix & object); // copy constructor
 	~Matrix();
 
@@ -24,6 +25,7 @@ public:
 	int getNonZeroValuesAmount() const;
 	float getV(int row, int col) const;
 	float * getMatrix() const; 
+	static void matrixIntegrationTest();
 
 private:
 	int rows_;
