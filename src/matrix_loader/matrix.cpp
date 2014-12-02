@@ -113,7 +113,7 @@ float Matrix::getV(int row, int col) const
 	}
 	if ((row*col) > (rows_*columns_))
 	{
-		std::cout << "Matrix::getV - either row or column argument is greater than rows_ or columns_" << std::endl;
+		std::cout << "Matrix::getV - either row or column argument is greater then rows_ or columns_" << std::endl;
 		return -1;
 	}
 	int arrayPos = (row-1)*rows_ + col - 1;
@@ -125,21 +125,29 @@ float * Matrix::getMatrix() const // PB
 	return this->matrix_;
 }
 
+void BasicTests();
 void D2MatrixArrayTest();
 void Matrix::matrixIntegrationTest() // To replace my main.cpp that was deleted :(
 {
-	Matrix x("matrixes/bcsstk03.mtx");
-	std::cout << "Examples for bad behaviour:" << std::endl;
-	std::cout << x.getV(0,0) << std::endl;
-	std::cout << x.getV(122,122) << std::endl;
 	std::cout << "____________________________" << std::endl;
-	std::cout << "Examples for good behaviour:" << std::endl;
-	std::cout << x.getV(1,1) << std::endl; // first element, which we would normally get by Matrix[0][0]
-	std::cout << x.getV(4,1) << std::endl;
-	std::cout << x.getV(112,112) << std::endl;
+	std::cout << "Basic tests:" << std::endl;
+	BasicTests();
 	std::cout << "____________________________" << std::endl;
 	std::cout << "Testing Matrix constructor for 2D array:" << std::endl;
 	D2MatrixArrayTest();
+}
+
+void BasicTests()
+{
+	Matrix x("matrixes/bcsstk03.mtx");
+	std::cout << (x.getV(2,1) == float(0));
+	std::cout << (x.getV(2,1) == x.getV(1,2));
+	std::cout << (x.getRows() == 112);
+	std::cout << (x.getColumns() == 112);
+	std::cout << (x.getNonZeroValuesAmount() == 376) << std::endl;
+	std::cout << "Invalid arguments for getV method:" << std::endl;
+	std::cout << (x.getV(0,0) == -1) << std::endl;
+	std::cout << (x.getV(122,122) == -1) << std::endl;
 }
 
 void D2MatrixArrayTest()

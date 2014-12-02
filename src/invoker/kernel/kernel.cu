@@ -51,14 +51,37 @@ void runKernel(dim3 gridSize, dim3 blockSize, float* in1, float* in2, float* out
 {
 	//std::cout << gridSize.x << gridSize.y << gridSize.z << "\n";
 	//std::cout << blockSize.x << blockSize.y << blockSize.z << "\n";
+	cudaEvent_t start, stop; // Mam pewne obawy przed wyrzucaniem tego do osobnych funkcji, ¿eby nie zajmowa³o niepotrzebnie czasu systemowego
+	float time;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+
+	cudaEventRecord(start, 0);
 
 	matrixOperation <<< gridSize, blockSize >>>(in1, in2, out);
-	
+
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+
+	cudaEventElapsedTime(&time, start, stop);
+	std::cout << "Time for the Kernel: " << time << std::endl;
 }
 
 void runKernelWithError(dim3 gridSize, dim3 blockSize, float* in1, float* in2,
 	float* out, float* error)
 {
-	
+	cudaEvent_t start, stop;
+	float time;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+
+	cudaEventRecord(start, 0);
+
 	matrixOperation <<< gridSize, blockSize >>>(in1, in2, out, error);
+
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+
+	cudaEventElapsedTime(&time, start, stop);
+	std::cout << "Time for the ErrorKernel: " << time << std::endl;
 }

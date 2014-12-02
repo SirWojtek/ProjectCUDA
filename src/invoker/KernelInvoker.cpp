@@ -51,6 +51,8 @@ void KernelInvoker::compute(const Matrix& m1, const Matrix& m2, const Matrix& er
 
 	// TODO: w Matrix metoda pozwalajaca wczytac z tablicy dwuwymiarowej
 	// zwracanie macierzy jako wyniku
+	// TODO zrobione. Nie uda³o mi siê tylko obs³ugiwaæ wyj¹tków dla index out of range
+	// wiêc póki co podawajcie POPRAWNE wymiary tablic ;)
 
 	printResult();
 }
