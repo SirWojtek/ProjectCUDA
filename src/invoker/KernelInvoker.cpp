@@ -156,3 +156,34 @@ void KernelInvoker::printResult()
 		f << hostOutputTable_[i] << " ";
 	}
 }
+
+
+bool KernelInvoker::isResultCorrect_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult)
+{
+	if (areMatrixesEqual(m1, m2, mResult))
+	{
+		Matrix expectedResult = m1 + m2;
+		return (expectedResult == mResult);
+	}
+	else
+		return false;
+}
+
+std::vector<int> KernelInvoker::getErrorPosistions_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult)
+{
+	std::vector<int> errorPositions;
+	if (areMatrixesEqual(m1, m2, mResult))
+	{
+		Matrix expectedResult = m1 + m2;
+		int arraySize = expectedResult.getColumns() * expectedResult.getRows();
+		float * expectedResultArray = expectedResult.getMatrix();
+		float * resultArray = mResult.getMatrix();
+
+		for (int i = 0; i < arraySize; i++)
+		{
+			if (expectedResultArray[i] != resultArray[i])
+				errorPositions.push_back(i);
+		}
+	}
+	return errorPositions;
+}

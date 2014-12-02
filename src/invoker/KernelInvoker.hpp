@@ -2,7 +2,7 @@
 
 #include "../matrix_loader/matrix.hpp"
 #include "device_launch_parameters.h"
-
+#include <vector>
 
 class KernelInvoker
 {
@@ -21,6 +21,8 @@ private:
 	dim3 getGridSize();
 	void copyResultToHost();
 	void printResult();
+	bool isResultCorrect_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult);
+	std::vector<int> getErrorPosistions_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult);
 
 	unsigned arraySize_, arrayBytes_;
 	float* hostTable1_;
