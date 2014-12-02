@@ -47,6 +47,9 @@ Matrix loading **completed. Matrix chosen: http://www.cise.ufl.edu/research/spar
 3. Error recognition
 	- assume you have result matrix computed by CUDA,
 	- check for errors that may appear while computing
+4. Coffee making button
+	- make GUI that discovers nearest coffee machine and prepares coffee
+	- GUI should inform user when his/her coffee is ready
 
 
 Please assign yourself to one task.
