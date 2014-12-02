@@ -40,9 +40,10 @@ Matrix loading **completed. Matrix chosen: http://www.cise.ufl.edu/research/spar
 1. Kernel manager implementation
     - kernel manager task is to divide task to kernels, basing on input data size,
     - kernel manager should have functionality to trigger additional redundancy computing to check for errors,
-2. Time measurement
-	- how to measure kernel execution time?
-	- implementation of time measurement tool
+2. Async kernel execution
+    - error injection should be in separate kernel execution (not included in time calculation),
+    - adding with error and redundant adding should be executed paralel (CUDA API should have async method),
+    - time calculation should be done for adding with error and redundant adding,
 3. Error recognition
 	- assume you have result matrix computed by CUDA,
 	- check for errors that may appear while computing
@@ -57,7 +58,7 @@ If there is any question, you are free to contact me:)
 Person       |     Task
 -------------|----------------
 SirWojtek    | 1
-Gettor       | 2 + 100% hate on Visual Studio
+Gettor       | 2
 bendzasky    | 3
 
 
