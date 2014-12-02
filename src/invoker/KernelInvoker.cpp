@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <fstream>
+#include <assert.h>
 
 #include "device_launch_parameters.h"
 #include "../matrix_loader/matrix.hpp"
@@ -172,18 +173,18 @@ bool KernelInvoker::isResultCorrect_Add(const Matrix& m1, const Matrix& m2, cons
 std::vector<int> KernelInvoker::getErrorPosistions_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult)
 {
 	std::vector<int> errorPositions;
-	if (areMatrixesEqual(m1, m2, mResult))
+	assert(areMatrixesEqual(m1, m2, mResult));
+	
+	Matrix expectedResult = m1 + m2;
+	int arraySize = expectedResult.getColumns() * expectedResult.getRows();
+	float * expectedResultArray = expectedResult.getMatrix();
+	float * resultArray = mResult.getMatrix();
+	
+	for (int i = 0; i < arraySize; i++)
 	{
-		Matrix expectedResult = m1 + m2;
-		int arraySize = expectedResult.getColumns() * expectedResult.getRows();
-		float * expectedResultArray = expectedResult.getMatrix();
-		float * resultArray = mResult.getMatrix();
-
-		for (int i = 0; i < arraySize; i++)
-		{
-			if (expectedResultArray[i] != resultArray[i])
-				errorPositions.push_back(i);
-		}
+		if (expectedResultArray[i] != resultArray[i])
+			errorPositions.push_back(i);
 	}
+	
 	return errorPositions;
 }
