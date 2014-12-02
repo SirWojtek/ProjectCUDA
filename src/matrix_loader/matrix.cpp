@@ -27,6 +27,17 @@ Matrix::Matrix(std::string filename)
 	fin.close();
 }
 
+Matrix::Matrix(float *inputArray, int columns, int rows) : columns_(columns), rows_(rows)
+{
+	int arraySize = columns_ * rows_;
+
+	this->matrix_ = new float[arraySize];
+	for (int i = 0; i < arraySize; i++)
+		matrix_[i] = inputArray[i];
+
+	this->nonZeroValues_ = countNonZeroValuesAmount(inputArray, arraySize);
+}
+
 Matrix::Matrix(const Matrix &object)
 {
 	this->rows_ = object.getRows();
@@ -41,6 +52,28 @@ Matrix::Matrix(const Matrix &object)
 
 }
 
+bool Matrix::operator==(const Matrix &rhs) const
+{
+	if (this->getColumns() != rhs.getColumns())
+		return false;
+	if (this->getRows() != rhs.getRows())
+		return false;
+	for (int i = 0; i < this->getColumns()*this->getRows(); i++)
+	{
+		if (this->matrix_[i] != rhs.matrix_[i])
+			return false;
+	}
+
+	return true;
+}
+
+bool Matrix::operator!=(const Matrix &rhs) const
+{
+	if (*this == rhs)
+		return false;
+	else
+		return true;
+}
 
 Matrix& Matrix::operator=(Matrix rhs)
 {
@@ -101,7 +134,18 @@ float Matrix::getV(int row, int col) const
 	return matrix_[arrayPos];
 }
 
-float * Matrix::getMatrix() const // PB
+float * Matrix::getMatrix() const 
 {
 	return this->matrix_;
+}
+
+int Matrix::countNonZeroValuesAmount(float * inputArray, int arraySize)
+{
+	int nonZeroValuesCounter = 0;
+	for (int i = 0; i < arraySize; i++)
+	{
+		if (inputArray[i] != 0.0f)
+			nonZeroValuesCounter++;
+	}
+	return nonZeroValuesCounter;
 }

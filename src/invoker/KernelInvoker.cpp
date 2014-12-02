@@ -51,6 +51,7 @@ void KernelInvoker::compute(const Matrix& m1, const Matrix& m2, const Matrix& er
 
 	// TODO: w Matrix metoda pozwalajaca wczytac z tablicy dwuwymiarowej
 	// zwracanie macierzy jako wyniku
+	Matrix mOutput(this->hostOutputTable_, m1.getColumns(), m1.getRows());
 
 	printResult();
 }
