@@ -2,12 +2,17 @@
 #include <fstream>
 #include <algorithm>
 #include <string>
+#include <windows.h>
 
 #include "matrix.hpp"
 
 Matrix::Matrix(std::string filename)
 {
 	std::ifstream fin(filename);
+	if (!fin.good())
+	{
+		return;
+	}
 	while (fin.peek() == '%') fin.ignore(2048, '\n'); // Ignore comments in .mtx file
 
 	fin >> rows_ >> columns_ >> nonZeroValues_;
@@ -27,6 +32,22 @@ Matrix::Matrix(std::string filename)
 	fin.close();
 }
 
+Matrix::Matrix(float ** D2matrix, int rows, int cols) : // D2Matrix[rows][columns] not the other way
+	rows_(rows),
+	columns_(cols)
+{
+	matrix_ = new float[rows_ * columns_];
+	nonZeroValues_ = 0;
+	for (int i = 0; i < rows_; i++)
+	{
+		for (int l = 0; l < columns_; l++)
+		{
+			matrix_[l + i*rows_] = D2matrix[i][l];
+			if (D2matrix[i][l] == 0) nonZeroValues_++;
+		}
+	}
+}
+
 Matrix::Matrix(const Matrix &object)
 {
 	this->rows_ = object.getRows();
@@ -40,7 +61,6 @@ Matrix::Matrix(const Matrix &object)
 	}
 
 }
-
 
 Matrix& Matrix::operator=(Matrix rhs)
 {
@@ -59,7 +79,6 @@ Matrix& Matrix::operator+=(const Matrix &rhs)
 void Matrix::swap(Matrix &matrix1, Matrix &matrix2)
 {
 	using std::swap;
-
 	swap(matrix1.columns_, matrix2.columns_);
 	swap(matrix1.rows_, matrix2.rows_);
 	swap(matrix1.nonZeroValues_, matrix2.nonZeroValues_);
@@ -104,4 +123,39 @@ float Matrix::getV(int row, int col) const
 float * Matrix::getMatrix() const // PB
 {
 	return this->matrix_;
+}
+
+void D2MatrixArrayTest();
+void Matrix::matrixIntegrationTest() // To replace my main.cpp that was deleted :(
+{
+	Matrix x("matrixes/bcsstk03.mtx");
+	std::cout << "Examples for bad behaviour:" << std::endl;
+	std::cout << x.getV(0,0) << std::endl;
+	std::cout << x.getV(122,122) << std::endl;
+	std::cout << "____________________________" << std::endl;
+	std::cout << "Examples for good behaviour:" << std::endl;
+	std::cout << x.getV(1,1) << std::endl; // first element, which we would normally get by Matrix[0][0]
+	std::cout << x.getV(4,1) << std::endl;
+	std::cout << x.getV(112,112) << std::endl;
+	std::cout << "____________________________" << std::endl;
+	std::cout << "Testing Matrix constructor for 2D array:" << std::endl;
+	D2MatrixArrayTest();
+}
+
+void D2MatrixArrayTest()
+{
+	int tmp_row = 2;
+	int tmp_col = 2;
+	float ** tmp_matrix;
+	tmp_matrix = new float*[tmp_row];
+	tmp_matrix[0] = new float[tmp_col];
+	tmp_matrix[1] = new float[tmp_col];
+	tmp_matrix[0][0] = 0;
+	tmp_matrix[0][1] = 1;
+	tmp_matrix[1][0] = 2;
+	tmp_matrix[1][1] = 3;
+	Matrix x(tmp_matrix, tmp_row, tmp_col);
+	std::cout << (x.getNonZeroValuesAmount() == 1);
+	std::cout << (x.getV(1,1) == tmp_matrix[0][0]);
+	std::cout << (x.getV(2,2) == tmp_matrix[1][1]) << std::endl;
 }
