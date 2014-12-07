@@ -20,20 +20,6 @@ http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-microsoft-windows/ind
 ###Sparse matrix repository##
 http://www.cise.ufl.edu/research/sparse/matrices/
 
-###Tasks###
-
-####Already done####
-
-Kernel implementation **done**
-- kernel should make addition of two elements, position of added elements depends on kernel index,
-- kernel must be able to inject error, there is possibility of multiple error across kernels.
-
-
-Matrix loading **completed. Matrix chosen: http://www.cise.ufl.edu/research/sparse/matrices/HB/bcsstk03.html**
-- loading from file,
-- format can be chosen from one from repository site,
-- loaded matrix should be placed in 2D matrix in host memory.
-
 ###Overview###
 
 - we try to develop application that should add two sparse matrixes,
@@ -93,6 +79,8 @@ example struct defining single row:
 - output should be vector of bool of same lenght as input,
 - should check for different values in input vectors on same index,
 - should set field in output vector to 'false' when detect difference
+
+###Tasks###
 
 ####To do####
 
