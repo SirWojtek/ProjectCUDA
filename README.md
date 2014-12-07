@@ -107,7 +107,7 @@ If there is any question, you are free to contact me:)
 Person       |     Task
 -------------|----------------
 SirWojtek    | 1 - waiting for redesign
-Gettor       | 4
+Gettor       | 4 - as soon as VS allows me to open that project again...
 bendzasky    | 3
 
 
