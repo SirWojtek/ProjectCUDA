@@ -17,8 +17,7 @@ Matrix::Matrix(std::string filename)
 
 	fin >> rows_ >> columns_ >> nonZeroValues_;
 
-	matrix_ = new float[rows_*columns_];
-	std::fill(matrix_, matrix_ + rows_*columns_, 0.);
+	matrix_ = new CellInfo[nonZeroValues_];
 
 	// Read the data
 	for (int l = 0; l < nonZeroValues_; l++)
@@ -26,38 +25,26 @@ Matrix::Matrix(std::string filename)
 		int row, col;
 		float data;
 		fin >> row >> col >> data;
-		matrix_[(col-1) + (row-1)*rows_] = data;
+		matrix_[l].value = data;
+		matrix_[l].row = row;
+		matrix_[l].column = col;
 	}
 
 	fin.close();
 }
 
-Matrix::Matrix(float *inputArray, int columns, int rows) : columns_(columns), rows_(rows)
-{
-	int arraySize = columns_ * rows_;
-
-	this->matrix_ = new float[arraySize];
-	for (int i = 0; i < arraySize; i++)
-		matrix_[i] = inputArray[i];
-
-	this->nonZeroValues_ = countNonZeroValuesAmount(inputArray, arraySize);
-}
-
-Matrix::Matrix(float ** D2matrix, int rows, int cols) : // D2Matrix[rows][columns] not the other way
+Matrix::Matrix(CellInfo* inputArray, int rows, int columns, int arraySize) :
 	rows_(rows),
-	columns_(cols)
+	columns_(columns),
+	nonZeroValues_(arraySize)
 {
-	matrix_ = new float[rows_ * columns_];
-	nonZeroValues_ = 0;
-	for (int i = 0; i < rows_; i++)
+	matrix_ = new CellInfo[nonZeroValues_];
+	for (int i=0; i<nonZeroValues_; i++)
 	{
-		for (int l = 0; l < columns_; l++)
-		{
-			matrix_[l + i*rows_] = D2matrix[i][l];
-			if (D2matrix[i][l] == 0) nonZeroValues_++;
-		}
+		matrix_[i].value = inputArray[i].value;
+		matrix_[i].row = inputArray[i].row;
+		matrix_[i].column = inputArray[i].column;
 	}
-
 }
 
 Matrix::Matrix(const Matrix &object)
@@ -65,15 +52,14 @@ Matrix::Matrix(const Matrix &object)
 	this->rows_ = object.getRows();
 	this->columns_ = object.getColumns();
 	this->nonZeroValues_ = object.getNonZeroValuesAmount();
-	this->matrix_ = new float[rows_ * columns_];
+	this->matrix_ = new CellInfo[nonZeroValues_];
 
-	for (int i = 0; i < rows_*columns_; i++)
+	for (int i = 0; i < nonZeroValues_; i++)
 	{
 		this->matrix_[i] = object.matrix_[i];
 	}
 
 }
-
 
 bool Matrix::operator==(const Matrix &rhs) const
 {
@@ -81,12 +67,17 @@ bool Matrix::operator==(const Matrix &rhs) const
 		return false;
 	if (this->getRows() != rhs.getRows())
 		return false;
-	for (int i = 0; i < this->getColumns()*this->getRows(); i++)
+	if (this->getNonZeroValuesAmount() != rhs.getNonZeroValuesAmount())
+		return false;
+	for (int i = 0; i < this->getNonZeroValuesAmount(); i++)
 	{
-		if (this->matrix_[i] != rhs.matrix_[i])
+		if (this->matrix_[i].value != rhs.matrix_[i].value)
+			return false;
+		if (this->matrix_[i].row != rhs.matrix_[i].row)
+			return false;
+		if (this->matrix_[i].column != rhs.matrix_[i].column)
 			return false;
 	}
-
 	return true;
 }
 
@@ -103,14 +94,6 @@ Matrix& Matrix::operator=(Matrix rhs)
 	this->swap(*this, rhs);
 	return *this;
 }
-
-Matrix& Matrix::operator+=(const Matrix &rhs)
-{
-	for (int i = 0; i < columns_*rows_; i++)
-		matrix_[i] += rhs.matrix_[i];
-	return *this;
-}
-
 
 void Matrix::swap(Matrix &matrix1, Matrix &matrix2)
 {
@@ -143,26 +126,23 @@ int Matrix::getNonZeroValuesAmount() const
 
 float Matrix::getV(int row, int col) const
 {
-	if (row == 0 || col == 0){
-		std::cout << "Matrix::getV - either row or column argument is zero" << std::endl;
-		return -1;
-	}
-	if ((row*col) > (rows_*columns_))
+	for (int i=0; i<nonZeroValues_; i++)
 	{
-		std::cout << "Matrix::getV - either row or column argument is greater then rows_ or columns_" << std::endl;
-		return -1;
+		if(( matrix_[i].row == row ) && ( matrix_[i].column == col ) )
+		{
+			return matrix_[i].value;
+		}
 	}
-	int arrayPos = (row-1)*rows_ + col - 1;
-	return matrix_[arrayPos];
+	return 0;
 }
 
-float * Matrix::getMatrix() const 
+CellInfo * Matrix::getMatrix() const 
 {
 	return this->matrix_;
 }
 
 
-int Matrix::countNonZeroValuesAmount(float * inputArray, int arraySize)
+int Matrix::countNonZeroValuesAmount(float * inputArray, int arraySize) // Why is this a Matrix member function? - SD
 {
 	int nonZeroValuesCounter = 0;
 	for (int i = 0; i < arraySize; i++)
@@ -172,6 +152,7 @@ int Matrix::countNonZeroValuesAmount(float * inputArray, int arraySize)
 	}
 	return nonZeroValuesCounter;
 }
+
 void BasicTests();
 void D2MatrixArrayTest();
 void Matrix::matrixIntegrationTest() // To replace my main.cpp that was deleted :(
@@ -179,9 +160,6 @@ void Matrix::matrixIntegrationTest() // To replace my main.cpp that was deleted 
 	std::cout << "____________________________" << std::endl;
 	std::cout << "Basic tests:" << std::endl;
 	BasicTests();
-	std::cout << "____________________________" << std::endl;
-	std::cout << "Testing Matrix constructor for 2D array:" << std::endl;
-	D2MatrixArrayTest();
 }
 
 void BasicTests()
@@ -195,23 +173,4 @@ void BasicTests()
 	std::cout << "Invalid arguments for getV method:" << std::endl;
 	std::cout << (x.getV(0,0) == -1) << std::endl;
 	std::cout << (x.getV(122,122) == -1) << std::endl;
-}
-
-void D2MatrixArrayTest()
-{
-	int tmp_row = 2;
-	int tmp_col = 2;
-	float ** tmp_matrix;
-	tmp_matrix = new float*[tmp_row];
-	tmp_matrix[0] = new float[tmp_col];
-	tmp_matrix[1] = new float[tmp_col];
-	tmp_matrix[0][0] = 0;
-	tmp_matrix[0][1] = 1;
-	tmp_matrix[1][0] = 2;
-	tmp_matrix[1][1] = 3;
-	Matrix x(tmp_matrix, tmp_row, tmp_col);
-	std::cout << (x.getNonZeroValuesAmount() == 1);
-	std::cout << (x.getV(1,1) == tmp_matrix[0][0]);
-	std::cout << (x.getV(2,2) == tmp_matrix[1][1]) << std::endl;
-
 }
