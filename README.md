@@ -42,16 +42,17 @@ http://www.cise.ufl.edu/research/sparse/matrices/
 ####Matrix Loader####
 - should load matrix from file,
 - should not store 0 values in memory,
-- should be able to tell what rows contains non-zero values,
-- should return non-zero rows in order (from up to down),
-- should be able to load matrix from rows vector,
+- should be able to tell what cells contains non-zero values,
+- should return non-zero cells in order (from up to down),
+- should be able to load matrix from cells vector,
 
-example struct defining single row:
+Struct defining single cell:
 
-```struct RowInfo
+```struct CellInfo
 {
-	float* row;
-	int rowIndex;
+	float value;
+	int row;
+	int column;
 };```
 
 ####Kernel####
@@ -107,7 +108,7 @@ If there is any question, you are free to contact me:)
 Person       |     Task
 -------------|----------------
 SirWojtek    | 1 - waiting for redesign
-Gettor       | 4 - as soon as VS allows me to open that project again...
+Gettor       | 4 - done.
 bendzasky    | 3
 
 
