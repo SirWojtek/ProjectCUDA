@@ -6,6 +6,15 @@
 #include <iostream>
 #include <stdio.h>
 
+// broken kernel
+__device__ int brokenBlock = 0;
+__device__ int brokenThread = 0;
+
+__device__ int getErrorIdx_1D_1D()
+{
+	return brokenBlock *blockDim.x + brokenThread;
+}
+
 __device__ int getGlobalIdx_1D_1D()
 {
 	return blockIdx.x *blockDim.x + threadIdx.x;
@@ -38,8 +47,10 @@ __device__ float sumMatrix(const float * const d_inputMatrix1, const float * con
 
 __device__ bool isError(int index)
 {
-	// what is the reason for error? 
-	return true;
+	if (index == getErrorIdx_1D_1D())
+		return true;
+	else
+		return false;
 }
 
 __device__ void injectError(CellInfo &inputCell)
@@ -211,9 +222,9 @@ void testStartKernel_float()
 	gpuErrchk(cudaMemcpy(device_mIn2, host_mIn2, arrayBytes, cudaMemcpyHostToDevice));
 
 	// launch kernel
-	kernel << <arraySize, 1 >> >(device_mIn1, device_mIn2, device_mOut);
+	//kernel << <arraySize, 1 >> >(device_mIn1, device_mIn2, device_mOut);
 	// launch kernel with error
-	//kernelPlusError << <arraySize, 1 >> >(device_mIn1, device_mIn2, device_mOut);
+	kernelPlusError << <arraySize, 1 >> >(device_mIn1, device_mIn2, device_mOut);
 	gpuErrchk(cudaPeekAtLastError()); // debug
 
 	// copy memory from device

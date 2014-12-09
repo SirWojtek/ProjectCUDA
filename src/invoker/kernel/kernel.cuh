@@ -5,6 +5,8 @@
 
 struct CellInfo;
 
+// get broken thread's global id
+__device__ int getErrorIdx_1D_1D();
 // get threads global id
 __device__ int getGlobalIdx_1D_1D();
 __device__ int getGlobalIdx_2D_2D();
