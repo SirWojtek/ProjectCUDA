@@ -30,7 +30,7 @@ public:
 	int getColumns() const;
 	int getNonZeroValuesAmount() const;
 	float getV(int row, int col) const;
-	CellInfo* getMatrix() const; 
+	CellInfo* getMatrix() const;
 	static void matrixIntegrationTest();
 
 private:
@@ -39,5 +39,5 @@ private:
 	int nonZeroValues_;
 	CellInfo* matrix_;
 
-	int countNonZeroValuesAmount(float * inputArray, int arraySize); // Why is this a Matrix member function? - SD
+	int countNonZeroValuesAmount(float * inputArray, int arraySize); // Why is this a Matrix member function? - SD// it was used by constructor from floats array
 };

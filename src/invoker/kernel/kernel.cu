@@ -29,6 +29,13 @@ __device__ CellInfo sumMatrix(const CellInfo * const d_inputMatrix1, const CellI
 	return result;
 }
 
+__device__ float sumMatrix(const float * const d_inputMatrix1, const float * const d_inputMatrix2, int index)
+{
+	float result = d_inputMatrix1[index] + d_inputMatrix2[index];
+	return result;
+}
+
+
 __device__ bool isError(int index)
 {
 	// what is the reason for error? 
@@ -40,12 +47,27 @@ __device__ void injectError(CellInfo &inputCell)
 	inputCell.value += 99999999;
 }
 
+__device__ void injectError(float *inputCell)
+{
+	*inputCell += 99999999;
+}
+
+
 __global__ void kernel(const CellInfo  * const d_inputMatrix1,
 	const CellInfo  * const d_inputMatrix2, CellInfo * const d_outputMatrix)
 {
 	int index = getGlobalIdx_1D_1D();
 	d_outputMatrix[index] = sumMatrix(d_inputMatrix1, d_inputMatrix2, index);
 }
+
+__global__ void kernel(const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix)
+{
+	int index = getGlobalIdx_1D_1D();
+	d_outputMatrix[index] = sumMatrix(d_inputMatrix1, d_inputMatrix2, index);
+}
+
+
 
 __global__ void kernelPlusError(const CellInfo  * const d_inputMatrix1,
 	const CellInfo  * const d_inputMatrix2, CellInfo * const d_outputMatrix)
@@ -54,6 +76,15 @@ __global__ void kernelPlusError(const CellInfo  * const d_inputMatrix1,
 	d_outputMatrix[index] = sumMatrix(d_inputMatrix1, d_inputMatrix2, index);
 	if (isError(index))
 		injectError(d_outputMatrix[index]);
+}
+
+__global__ void kernelPlusError(const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix)
+{
+	int index = getGlobalIdx_1D_1D();
+	d_outputMatrix[index] = sumMatrix(d_inputMatrix1, d_inputMatrix2, index);
+	if (isError(index))
+		injectError(&d_outputMatrix[index]);
 }
 
 
@@ -96,7 +127,15 @@ __global__ void kernelPlusError(const CellInfo  * const d_inputMatrix1,
 //	std::cout << "Time for the ErrorKernel: " << time << std::endl;
 //}
 
-void testStartKernel()
+void CellInfoToFloat(float * output, CellInfo * input, int arraySize)
+{
+	for (int i = 0; i < arraySize; i++)
+	{
+		output[i] = input[i].value;
+	}
+}
+
+void testStartKernel_CellInfo()
 {
 	Matrix m1("matrixes/bcsstk03.mtx");
 	Matrix m2("matrixes/bcsstk03.mtx");
@@ -137,6 +176,55 @@ void testStartKernel()
 	std::cout << "\nOUTPUT: \n";
 	for (int i = 0; i < arraySize; i++)
 		std::cout << host_mOut[i].value<< " ";
+
+	// cleaning
+	cudaFree(device_mIn1);
+	cudaFree(device_mIn2);
+	cudaFree(device_mOut);
+	delete[] host_mOut;
+}
+
+void testStartKernel_float()
+{
+	Matrix m1("matrixes/bcsstk03.mtx");
+	Matrix m2("matrixes/bcsstk03.mtx");
+
+	int arraySize = m1.getNonZeroValuesAmount();
+	int arrayBytes = arraySize * sizeof(float);
+
+	// init CPU vars // no smart pointers in .cu allowed, watch out
+	float *host_mIn1 = new float[arraySize];  CellInfoToFloat(host_mIn1, m1.getMatrix(), m1.getNonZeroValuesAmount());
+	float *host_mIn2 = new float[arraySize];  CellInfoToFloat(host_mIn2, m2.getMatrix(), m2.getNonZeroValuesAmount());
+	float *host_mOut = new float[arraySize];
+
+	// init GPU vars
+	float *device_mIn1;
+	float *device_mIn2;
+	float *device_mOut;
+
+	// alloc GPU memory
+	gpuErrchk(cudaMalloc((void**)&device_mIn1, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&device_mIn2, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&device_mOut, arrayBytes));
+	// copy memory to device
+	gpuErrchk(cudaMemcpy(device_mIn1, host_mIn1, arrayBytes, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(device_mIn2, host_mIn2, arrayBytes, cudaMemcpyHostToDevice));
+
+	// launch kernel
+	kernel << <arraySize, 1 >> >(device_mIn1, device_mIn2, device_mOut);
+	// launch kernel with error
+	//kernelPlusError << <arraySize, 1 >> >(device_mIn1, device_mIn2, device_mOut);
+	gpuErrchk(cudaPeekAtLastError()); // debug
+
+	// copy memory from device
+	gpuErrchk(cudaMemcpy(host_mOut, device_mOut, arrayBytes, cudaMemcpyDeviceToHost));
+
+	std::cout << "INPUT: \n";
+	for (int i = 0; i < arraySize; i++)
+		std::cout << host_mIn1[i] << " ";
+	std::cout << "\nOUTPUT: \n";
+	for (int i = 0; i < arraySize; i++)
+		std::cout << host_mOut[i] << " ";
 
 	// cleaning
 	cudaFree(device_mIn1);
