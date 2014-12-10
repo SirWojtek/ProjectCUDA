@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <string>
 #include <windows.h>
-
 #include "matrix.hpp"
+
 
 Matrix::Matrix(std::string filename)
 {
@@ -95,6 +95,34 @@ Matrix& Matrix::operator=(Matrix rhs)
 	return *this;
 }
 
+Matrix& Matrix::operator+=(const Matrix &rhs)
+{
+	CellInfo * thisMatrix = this->getMatrix();
+	CellInfo * addedMatrix = rhs.getMatrix();
+	int vectorSize = rhs.getNonZeroValuesAmount();
+	int row = 0, column = 0;
+	float actualValue = 0, newValue = 0;
+
+	for (int i = 0; i < vectorSize; i++)
+	{
+		row = addedMatrix[i].row;
+		column = addedMatrix[i].column;
+		actualValue = this->getV(row, column);
+		newValue = actualValue + addedMatrix[i].value;
+		if (actualValue == 0)
+		{
+			CellInfo newCell = {newValue, row, column};
+			this->addCell(newCell);
+		}
+		else
+		{
+			this->setV(row, column, newValue);
+		}
+	}
+
+	return *this;
+}
+
 void Matrix::swap(Matrix &matrix1, Matrix &matrix2)
 {
 	using std::swap;
@@ -173,4 +201,28 @@ void BasicTests()
 	std::cout << "Invalid arguments for getV method:" << std::endl;
 	std::cout << (x.getV(0,0) == -1) << std::endl;
 	std::cout << (x.getV(122,122) == -1) << std::endl;
+}
+
+
+void Matrix::addCell(CellInfo &newCell)
+{
+	int oldSize = getNonZeroValuesAmount();
+	int newSize = oldSize + 1;
+	CellInfo *temp = new CellInfo[newSize];
+	std::copy(matrix_, matrix_ + oldSize, temp);
+	delete[] matrix_;
+	matrix_ = temp;
+	matrix_[oldSize] = newCell; // 
+	nonZeroValues_++;
+}
+
+void Matrix::setV(int row, int col, float value)
+{
+	for (int i = 0; i<nonZeroValues_; i++)
+	{
+		if ((matrix_[i].row == row) && (matrix_[i].column == col))
+		{
+			matrix_[i].value = value;
+		}
+	}
 }
