@@ -28,12 +28,18 @@ __global__ void kernel(const CellInfo  * const d_inputMatrix1,
 	const CellInfo  * const d_inputMatrix2, CellInfo * const d_outputMatrix);
 __global__ void kernel(const float  * const d_inputMatrix1,
 	const float  * const d_inputMatrix2, float * const d_outputMatrix);
+// wrapper for calling from cpp files
+void runKernel(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix);
 
 
 // kernel performing operations on two matrices ver with error injection
 __global__ void kernelPlusError(const CellInfo  * const d_inputMatrix1,
 	const CellInfo  * const d_inputMatrix2, CellInfo * const d_outputMatrix);
 __global__ void kernelPlusError(const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix);
+// wrapper for calling from cpp files
+void runKernelPlusError(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
 	const float  * const d_inputMatrix2, float * const d_outputMatrix);
 
 // wrappers for C++ class calling kernel

@@ -4,6 +4,7 @@
 #include <exception>
 #include <fstream>
 #include <assert.h>
+#include <algorithm>
 
 #include "device_launch_parameters.h"
 #include "../matrix_loader/matrix.hpp"
@@ -12,179 +13,135 @@
 
 KernelInvoker::KernelInvoker(dim3 blockSize, float redundant) :
 	blockSize_(blockSize), redundant_(redundant),
-	hostTable1_(NULL), hostTable2_(NULL) ,hostOutputTable_(NULL), hostErrorTable_(NULL),
-	deviceTable1_(NULL), deviceTable2_(NULL) ,deviceOutputTable_(NULL), deviceErrorTable_(NULL) {}
+	deviceTable1_(NULL), deviceTable2_(NULL) ,deviceOutputTable_(NULL) {}
 
 KernelInvoker::~KernelInvoker()
 {
-	delete[] hostTable1_;
-	delete[] hostTable2_;
-	delete[] hostOutputTable_;
-	delete[] hostErrorTable_;
-
 	cudaFree(deviceTable1_);
 	cudaFree(deviceTable2_);
 	cudaFree(deviceOutputTable_);
-	cudaFree(deviceErrorTable_);
 }
 
-void KernelInvoker::compute(const Matrix& m1, const Matrix& m2, const Matrix& errorMatrix)
+void KernelInvoker::compute(const Matrix& m1, const Matrix& m2)
 {
 	// Make sure arrays have same dimensions
-	if (!areMatrixesEqual(m1, m2, errorMatrix))
+	if (!areMatrixesEqual(m1, m2))
 	{
 		throw std::runtime_error("Matrix dimensions are not equal");
 	}
 
-	initHost(m1);
-	readToFloatTable(m1, m2, errorMatrix);
+	init(m1, m2);
+	runKernels();
+	
+	Matrix mOutput = getOutputMatrix(m1.getRows(), m1.getColumns());
+
+	// TODO: write method in Matrix thats print matrixes (operator <<)
+	// std::cout << mOutput;
+}
+
+bool KernelInvoker::areMatrixesEqual(const Matrix& m1, const Matrix& m2)
+{
+	return (m1.getColumns() == m2.getColumns() && m1.getRows() == m2.getRows());
+}
+
+void KernelInvoker::init(const Matrix& m1, const Matrix& m2)
+{
+	readDataFromMatrixes(m1, m2);
+	hostOutputMatrix_.resize(arraySize_);
 
 	initDevice();
 	copyToDevice();
-
-	//const dim3 gridSize = getGridSize();
-	const dim3 gridSize(m1.getColumns(), m1.getRows(), 1);
-	const dim3 blockSize(1, 1, 1);
-	
-	runKernel(gridSize, (1, 1 ,1), deviceTable1_, deviceTable2_, deviceOutputTable_);
-	gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
-	copyResultToHost();
-
-	// TODO: w Matrix metoda pozwalajaca wczytac z tablicy dwuwymiarowej
-	// zwracanie macierzy jako wyniku
-	
-	// TODO zrobione. Nie uda³o mi siê tylko obs³ugiwaæ wyj¹tków dla index out of range
-	// wiêc póki co podawajcie POPRAWNE wymiary tablic ;)
-	Matrix mOutput(this->hostOutputTable_, m1.getColumns(), m1.getRows()); // <- for 1D array
-
-	printResult();
 }
 
-bool KernelInvoker::areMatrixesEqual(const Matrix& m1, const Matrix& m2, const Matrix& errorMatrix)
+void KernelInvoker::readDataFromMatrixes(const Matrix& m1, const Matrix& m2)
 {
-	return (m1.getColumns() == m2.getColumns() && m1.getColumns() == errorMatrix.getColumns()) ||
-		(m1.getRows() == m2.getRows() && m2.getRows() == errorMatrix.getRows());
+	readDataFromMatrix(m1, hostInputMatrix1_);
+	readDataFromMatrix(m2, hostInputMatrix2_);
+
+	makeSameLength(hostInputMatrix1_, hostInputMatrix2_);
+	arraySize_ = hostInputMatrix1_.dataVector.size();
 }
 
-
-void KernelInvoker::initHost(const Matrix& m)
+void KernelInvoker::readDataFromMatrix(const Matrix& m1, MatrixData& output)
 {
-	arraySize_ = m.getColumns() * m.getRows();
+	CellInfo* data = m1.getMatrix();
 
-	hostTable1_ = new float[arraySize_];
-	hostTable2_ = new float[arraySize_];
-	hostOutputTable_ = new float[arraySize_];
-
-	for (int i = 0; i < arraySize_; i++) // filling with 0 for clarity
-		hostOutputTable_[i] = 0;
-
-	hostErrorTable_ = new float[arraySize_];
-}
-
-void KernelInvoker::readToFloatTable(const Matrix& m1, const Matrix& m2, const Matrix& errorMatrix)
-{
-	for (int i = 0; i < arraySize_; i++)
+	for (unsigned i = 0; i < m1.getNonZeroValuesAmount(); i++)
 	{
-		hostTable1_[i] = static_cast<float>(m1.getMatrix()[i]);
-		hostTable2_[i] = static_cast<float>(m2.getMatrix()[i]);
-		hostErrorTable_[i] = static_cast<float>(errorMatrix.getMatrix()[i]);
+		output.addElement(data[i].value, data[i].row, data[i].column);
+	}
+}
+
+void KernelInvoker::makeSameLength(MatrixData& m1, MatrixData& m2)
+{
+	addZeroValuesOnNotExistingPosition(m1, m2);
+	addZeroValuesOnNotExistingPosition(m2, m1);
+}
+
+void KernelInvoker::addZeroValuesOnNotExistingPosition(MatrixData& m1, MatrixData& m2)
+{
+	for (unsigned i = 0; i < m1.positionVector.size(); i++)
+	{
+		float& currentValue = m1.dataVector[i];
+		std::pair<unsigned, unsigned>& currentPos = m1.positionVector[i];
+
+		if (std::find(m2.positionVector.begin(), m2.positionVector.end(), currentPos) ==
+			m2.positionVector.end())
+		{
+			m2.insert(i, currentValue, currentPos.first, currentPos.second);
+		}
 	}
 }
 
 void KernelInvoker::initDevice()
 {
-	//arrayBytes_ = getArraySize();
 	arrayBytes_ = arraySize_ * sizeof(float);
 
 	gpuErrchk(cudaMalloc((void**)&deviceTable1_, arrayBytes_));
 	gpuErrchk(cudaMalloc((void**)&deviceTable2_, arrayBytes_));
 	gpuErrchk(cudaMalloc((void**)&deviceOutputTable_, arrayBytes_));
-	gpuErrchk(cudaMalloc((void**)&deviceErrorTable_, arrayBytes_));
-
-	// not needed?
-	//gpuErrchk(cudaMemset((void**)&deviceTable1_, 0, arrayBytes_));
-	//gpuErrchk(cudaMemset((void**)&deviceTable2_, 0, arrayBytes_));
-	//gpuErrchk(cudaMemset((void**)&deviceOutputTable_, 0, arrayBytes_));
-	//gpuErrchk(cudaMemset((void**)&deviceErrorTable_, 0, arrayBytes_));
-}
-
-unsigned KernelInvoker::getArraySize()
-{
-	return arraySize_ % (blockSize_.x * blockSize_.y) ?
-		(arraySize_ + blockSize_.x * blockSize_.y) * sizeof(float) :
-		arraySize_ * sizeof(float);
 }
 
 void KernelInvoker::copyToDevice()
 {
-	gpuErrchk(cudaMemcpy(deviceTable1_, hostTable1_, arrayBytes_, cudaMemcpyHostToDevice));
-	gpuErrchk(cudaMemcpy(deviceTable2_, hostTable2_, arrayBytes_, cudaMemcpyHostToDevice));
-	gpuErrchk(cudaMemcpy(deviceErrorTable_, hostErrorTable_, arrayBytes_, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(deviceTable1_, hostInputMatrix1_.getRawTable(), arrayBytes_, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(deviceTable2_, hostInputMatrix2_.getRawTable(), arrayBytes_, cudaMemcpyHostToDevice));
 }
 
-dim3 KernelInvoker::getGridSize()
+void KernelInvoker::runKernels()
 {
-	return dim3(arraySize_ / (blockSize_.x * blockSize_.y));
+	const dim3 gridSize(arraySize_, 1, 1);
+	const dim3 blockSize(1, 1, 1);
+
+	// using of kernel invocator wrapper
+	runKernelPlusError(gridSize, blockSize, deviceTable1_, deviceTable2_, deviceOutputTable_);
+	gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
+	copyResultToHost();
 }
 
 void KernelInvoker::copyResultToHost()
 {
-	gpuErrchk(cudaMemcpy(hostOutputTable_, deviceOutputTable_, arrayBytes_, cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(hostOutputMatrix_.getRawTable(), deviceOutputTable_, arrayBytes_, cudaMemcpyDeviceToHost));
 }
 
-void KernelInvoker::printResult()
+Matrix KernelInvoker::getOutputMatrix(unsigned rowNo, unsigned colNo)
 {
-	std::ofstream f("result.log");
-	
-	f << "Matrix 1:" << std::endl;
+	CellInfo* info = new CellInfo[arraySize_];
+	float* rawTable = hostOutputMatrix_.getRawTable();
+	std::vector<float>::iterator it;
 
-	for (int i = 0; i < arraySize_; i++)
+	for (unsigned i = 0; i < arraySize_; i++)
 	{
-		f << hostTable1_[i] << " ";
+		info[i].value = rawTable[i];
+		info[i].row = hostOutputMatrix_.positionVector[0].first;
+		info[i].column = hostOutputMatrix_.positionVector[0].second;
 	}
 
-	f << std::endl << "Matrix 2:" << std::endl;
-
-	for (int i = 0; i < arraySize_; i++)
-	{
-		f << hostTable2_[i] << " ";
-	}
-
-	f << std::endl << "Output matrix:" << std::endl;
-
-	for (int i = 0; i < arraySize_; i++)
-	{
-		f << hostOutputTable_[i] << " ";
-	}
+	return Matrix(info, rowNo, colNo, arraySize_);
 }
-
 
 bool KernelInvoker::isResultCorrect_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult)
 {
-	if (areMatrixesEqual(m1, m2, mResult))
-	{
-		Matrix expectedResult = m1 + m2;
-		return (expectedResult == mResult);
-	}
-	else
-		return false;
-}
-
-std::vector<int> KernelInvoker::getErrorPosistions_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult)
-{
-	std::vector<int> errorPositions;
-	assert(areMatrixesEqual(m1, m2, mResult));
-	
-	Matrix expectedResult = m1 + m2;
-	int arraySize = expectedResult.getColumns() * expectedResult.getRows();
-	float * expectedResultArray = expectedResult.getMatrix();
-	float * resultArray = mResult.getMatrix();
-	
-	for (int i = 0; i < arraySize; i++)
-	{
-		if (expectedResultArray[i] != resultArray[i])
-			errorPositions.push_back(i);
-	}
-	
-	return errorPositions;
+	// TODO: write kernel, that checks if two vectors are identical
+	return false;
 }

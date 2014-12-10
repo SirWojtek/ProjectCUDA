@@ -6,3 +6,5 @@
 *.vcxproj.user
 *.pdb
 bin/*
+/.gitattributes
+/src/*.log

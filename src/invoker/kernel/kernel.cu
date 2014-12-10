@@ -78,7 +78,11 @@ __global__ void kernel(const float  * const d_inputMatrix1,
 	d_outputMatrix[index] = sumMatrix(d_inputMatrix1, d_inputMatrix2, index);
 }
 
-
+void runKernel(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix)
+{
+	kernel << < gridSize, blockSize >> > (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
+}
 
 __global__ void kernelPlusError(const CellInfo  * const d_inputMatrix1,
 	const CellInfo  * const d_inputMatrix2, CellInfo * const d_outputMatrix)
@@ -98,7 +102,11 @@ __global__ void kernelPlusError(const float  * const d_inputMatrix1,
 		injectError(&d_outputMatrix[index]);
 }
 
-
+void runKernelPlusError(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix)
+{
+	kernelPlusError <<< gridSize, blockSize >>> (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
+}
 
 //
 //void runKernel(dim3 gridSize, dim3 blockSize, float* in1, float* in2, float* out)
