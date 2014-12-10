@@ -94,8 +94,8 @@ Struct defining single cell:
     - time calculation should be done for adding with error and redundant adding,
 3. Kernel redesign
 	- read kernel description above
-4. Matrix loader redesign
-	- read matrix loader description above
+4. Matrix loader print
+	- overload 'operator<<' to print matrix in user-frendly way 
 4. Error recognition
 	- read error checker description above
 
@@ -107,8 +107,8 @@ If there is any question, you are free to contact me:)
 
 Person       |     Task
 -------------|----------------
-SirWojtek    | 1 - waiting for redesign
-Gettor       | 4 - done.
+SirWojtek    | 1 - partially done
+Gettor       | 4, 2
 bendzasky    | 3
 
 
