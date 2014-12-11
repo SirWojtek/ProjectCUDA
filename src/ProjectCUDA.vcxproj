@@ -24,12 +24,14 @@
     <ClCompile Include="matrix_loader\matrix.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="invoker\errorCheckKernel\errorCheckKernel.cuh" />
+    <ClInclude Include="invoker\kernelCommon\gpuErrchk.cuh" />
     <ClInclude Include="invoker\KernelInvoker.hpp" />
-    <ClInclude Include="invoker\kernel\gpuErrchk.cuh" />
     <ClInclude Include="invoker\kernel\kernel.cuh" />
     <ClInclude Include="matrix_loader\matrix.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="invoker\errorCheckKernel\errorCheckKernel.cu" />
     <CudaCompile Include="invoker\kernel\kernel.cu" />
   </ItemGroup>
   <ItemGroup>

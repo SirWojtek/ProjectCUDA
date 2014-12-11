@@ -9,7 +9,7 @@
 #include "device_launch_parameters.h"
 #include "../matrix_loader/matrix.hpp"
 #include "kernel/kernel.cuh"
-#include "kernel/gpuErrchk.cuh"
+#include "kernelCommon/gpuErrchk.cuh"
 
 KernelInvoker::KernelInvoker(dim3 blockSize, float redundant) :
 	blockSize_(blockSize), redundant_(redundant),

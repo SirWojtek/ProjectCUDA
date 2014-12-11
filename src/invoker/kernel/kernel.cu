@@ -1,6 +1,6 @@
 
 #include "kernel.cuh"
-#include "gpuErrchk.cuh"
+#include "..\kernelCommon\gpuErrchk.cuh"
 #include "..\..\matrix_loader\matrix.hpp"
 #include <assert.h>
 #include <iostream>
