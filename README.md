@@ -109,7 +109,7 @@ Person       |     Task
 -------------|----------------
 SirWojtek    | 1 - partially done
 Gettor       | 4, 2
-bendzasky    | 3
+bendzasky    | 3, 5
 
 
 ###Contact###
