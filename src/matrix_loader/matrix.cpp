@@ -123,6 +123,21 @@ Matrix& Matrix::operator+=(const Matrix &rhs)
 	return *this;
 }
 
+std::ostream& operator<<(std::ostream& out, const Matrix &obj)
+{
+	out << "Pretty Print starting:" << std::endl;
+	out << "Rows:" << obj.rows_ << std::endl;
+	out << "Columns:" << obj.columns_ << std::endl;
+	out << "Non Zero Values:" << obj.nonZeroValues_ << std::endl;
+	out << "Values (row/column/value):" << std::endl;
+	for (int i=0; i<obj.nonZeroValues_; i++)
+	{
+		out << obj.matrix_[i].row << " " << obj.matrix_[i].column << " " << obj.matrix_[i].value << std::endl;
+	}
+	out << "Pretty Print ended." << std::endl;
+	return out;
+}
+
 void Matrix::swap(Matrix &matrix1, Matrix &matrix2)
 {
 	using std::swap;
@@ -199,8 +214,10 @@ void BasicTests()
 	std::cout << (x.getColumns() == 112);
 	std::cout << (x.getNonZeroValuesAmount() == 376) << std::endl;
 	std::cout << "Invalid arguments for getV method:" << std::endl;
-	std::cout << (x.getV(0,0) == -1) << std::endl;
-	std::cout << (x.getV(122,122) == -1) << std::endl;
+	std::cout << (x.getV(0,0) == 0) << std::endl;
+	std::cout << (x.getV(122,122) == 0) << std::endl;
+	std::cout << "Printing whole matrix:" << std::endl;
+	std::cout << x;
 }
 
 

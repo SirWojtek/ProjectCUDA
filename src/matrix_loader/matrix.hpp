@@ -24,6 +24,7 @@ public:
 	bool operator!=(const Matrix &rhs) const;
 	Matrix& operator=(Matrix rhs);
 	Matrix& operator+=(const Matrix &rhs);
+	friend std::ostream& operator<<(std::ostream& out, const Matrix &obj);
 	friend Matrix operator+(Matrix lhs, const Matrix &rhs){ return lhs += rhs; };
 	void swap(Matrix& matrix1, Matrix& matrix2);
 
