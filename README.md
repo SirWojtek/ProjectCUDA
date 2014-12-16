@@ -90,7 +90,7 @@ Struct defining single cell:
     - kernel manager should have functionality to trigger additional redundancy computing to check for errors,
 2. Async kernel execution
     - error injection should be in separate kernel execution (not included in time calculation),
-    - adding with error and redundant adding should be executed paralel (CUDA API should have async method),
+    - adding with error and redundant adding should be executed paralel (CUDA API should have async method) [async kernel execution is described in cuda c programming guide 3.2.5., unfortunately it only works on devices with compute capability 2.x and mine has 1.4- bendzasky],
     - time calculation should be done for adding with error and redundant adding,
 3. Kernel redesign
 	- read kernel description above
