@@ -7,6 +7,9 @@ Basic materials needed to learn how to CUDA are placed in docs folder. If you wa
 
 http://docs.nvidia.com/cuda/index.html#axzz3IZNIqBd5
 
+Super Magic Script To List All Cuda Device Properties (SMSTLACDP):
+http://www.cs.fsu.edu/~xyuan/cda5125/examples/lect24/devicequery.cu
+
 ###Getting Started###
 
 If you want install CUDA compiler (called nvcc) please visit:
