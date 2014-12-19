@@ -95,12 +95,14 @@ Struct defining single cell:
     - error injection should be in separate kernel execution (not included in time calculation),
     - adding with error and redundant adding should be executed paralel (CUDA API should have async method) [async kernel execution is described in cuda c programming guide 3.2.5., unfortunately it only works on devices with compute capability 2.x and mine has 1.4- bendzasky],
     - time calculation should be done for adding with error and redundant adding,
-3. Kernel redesign
-	- read kernel description above
-4. Matrix loader print
-	- overload 'operator<<' to print matrix in user-frendly way 
-4. Error recognition
+4. Matrix randomize
+	- shuffle matrix (all values)
+5. Error recognition
 	- read error checker description above
+6.Run redundant computing when kernels are free
+	-  detecting number of kernels,
+	-  depends of kernel number divide computing task to parts,
+	-  when there are free kernels run redundant computation
 
 Please assign yourself to one task.
 
@@ -110,10 +112,15 @@ If there is any question, you are free to contact me:)
 
 Person       |     Task
 -------------|----------------
-SirWojtek    | 1 - partially done
+SirWojtek    | 1, 5 - partially done
 Gettor       | 4, 2
-bendzasky    | 3, 5
+bendzasky    | 6
 
+Person      |     CUDA ver
+------------|-------------------
+SirWojtek   |          
+Gettor      |         
+bendzasky   |        
 
 ###Contact###
 
