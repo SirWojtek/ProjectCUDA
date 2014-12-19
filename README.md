@@ -116,8 +116,8 @@ SirWojtek    | 1, 5 - partially done
 Gettor       | 4, 2
 bendzasky    | 6
 
-Person      |     CUDA ver
-------------|-------------------
+Person      |  Computing Capacity
+------------|----------------------
 SirWojtek   |          
 Gettor      |         
 bendzasky   |        
