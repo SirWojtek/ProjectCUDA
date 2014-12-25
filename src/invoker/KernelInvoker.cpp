@@ -10,7 +10,6 @@
 #include "../matrix_loader/matrix.hpp"
 #include "kernel/kernel.cuh"
 #include "kernelCommon/gpuErrchk.cuh"
-
 KernelInvoker::KernelInvoker(dim3 blockSize, float redundant) :
 	blockSize_(blockSize), redundant_(redundant),
 	deviceTable1_(NULL), deviceTable2_(NULL) ,deviceOutputTable_(NULL) {}
@@ -48,7 +47,6 @@ void KernelInvoker::init(const Matrix& m1, const Matrix& m2)
 {
 	readDataFromMatrixes(m1, m2);
 	hostOutputMatrix_.resize(arraySize_);
-
 	initDevice();
 	copyToDevice();
 }

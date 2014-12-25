@@ -5,6 +5,8 @@
 #include "device_launch_parameters.h"
 #include "invoker\KernelInvoker.hpp"
 
+#include "invoker\deviceProperties.cuh"// bendzasky testing
+
 #define FireMatrixDebugSession "false"
 
 void MatrixTest()
@@ -32,6 +34,9 @@ void run()
 
 int main()
 {
+	deviceProperties properties; // bendzasky testing
+	properties.printDeviceProperties(); // bendzasky testing
+
 	MatrixTest();
 	try
 	{
