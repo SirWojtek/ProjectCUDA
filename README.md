@@ -116,11 +116,11 @@ SirWojtek    | 1, 5 - partially done
 Gettor       | 4, 2
 bendzasky    | 6
 
-Person      |  Computing Capacity
+Person      |  Computing Capability
 ------------|----------------------
 SirWojtek   |          
 Gettor      |         
-bendzasky   |        
+bendzasky   |       1.1 
 
 ###Contact###
 
