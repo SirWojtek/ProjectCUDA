@@ -216,7 +216,8 @@ Matrix * Matrix::randomize() const
 	}
 	for (int i=0; i<this->nonZeroValues_; i++)
 	{
-		randomizedMatrix->matrix_[i] = this->matrix_[range[i]];
+		randomizedMatrix->matrix_[i] = this->matrix_[i];
+		randomizedMatrix->matrix_[i].value = this->matrix_[range[i]].value;
 	}
 	delete[] range;
 	return randomizedMatrix;
