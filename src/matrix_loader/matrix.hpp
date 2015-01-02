@@ -4,13 +4,6 @@
 struct CellInfo
 {
 public:
-	CellInfo& operator=(CellInfo val)
-	{
-		this->row = val.row;
-		this->column = val.column;
-		this->value = val.value;
-		return *this;
-	}
 	float value;
 	int row;
 	int column;

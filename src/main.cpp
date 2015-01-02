@@ -7,7 +7,7 @@
 
 #include "invoker\deviceProperties.cuh"// bendzasky testing
 
-#define FireMatrixDebugSession "false"
+#define FireMatrixDebugSession "true"
 
 void MatrixTest()
 {
