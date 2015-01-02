@@ -97,6 +97,7 @@ Struct defining single cell:
     - time calculation should be done for adding with error and redundant adding,
 3. Matrix randomize
 	- shuffle matrix (all values)
+	- DONE - Randomized matrix will have the same columns + rows but with mixed values. These columns and rows will be on the same CellInfo index as before randomization but with different value (from another CellInfo index)
 4. Error recognition
 	- read error checker description above
 5.Run redundant computing when kernels are free
