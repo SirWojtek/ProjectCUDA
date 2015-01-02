@@ -2,7 +2,11 @@
 #include <fstream>
 #include <algorithm>
 #include <string>
+
+#include <stdlib.h>
 #include <windows.h>
+#include <time.h>
+
 #include "matrix.hpp"
 
 
@@ -184,6 +188,39 @@ CellInfo * Matrix::getMatrix() const
 	return this->matrix_;
 }
 
+Matrix * Matrix::randomize() const
+{
+	Matrix* randomizedMatrix = new Matrix();
+	randomizedMatrix->nonZeroValues_ = this->nonZeroValues_;
+	randomizedMatrix->columns_ = this->columns_;
+	randomizedMatrix->rows_ = this->rows_;
+	randomizedMatrix->matrix_ = new CellInfo[randomizedMatrix->nonZeroValues_];
+	int* range = new int[this->nonZeroValues_];
+	for (int i=0; i<this->nonZeroValues_; i++)
+	{
+		range[i] = i;
+	}
+	srand (time(NULL));
+	for (int i=0; i<(this->nonZeroValues_ * this->nonZeroValues_); i++)
+	{
+		int a = rand() % this->nonZeroValues_;
+		int b = rand() % this->nonZeroValues_;
+		if (a == b )
+		{
+			if (a != (this->nonZeroValues_ - 1)) a++;
+			else a--;
+		}
+		int tmp = range[a];
+		range[a] = range[b];
+		range[b] = tmp;
+	}
+	for (int i=0; i<this->nonZeroValues_; i++)
+	{
+		randomizedMatrix->matrix_[i] = this->matrix_[range[i]];
+	}
+	delete[] range;
+	return randomizedMatrix;
+}
 
 int Matrix::countNonZeroValuesAmount(float * inputArray, int arraySize) // Why is this a Matrix member function? - SD
 {
@@ -216,8 +253,14 @@ void BasicTests()
 	std::cout << "Invalid arguments for getV method:" << std::endl;
 	std::cout << (x.getV(0,0) == 0) << std::endl;
 	std::cout << (x.getV(122,122) == 0) << std::endl;
-	std::cout << "Printing whole matrix:" << std::endl;
-	std::cout << x;
+	// std::cout << "Printing whole matrix:" << std::endl;
+	// std::cout << x;
+	std::cout << "Randomizing matrix:" << std::endl;
+	Matrix * y = x.randomize();
+	// std::cout << "Printing randomized matrix:" << std::endl;
+	// std::cout << *y;
+	std::cout << "Checking if randomize actually did its job:" << std::endl;
+	std::cout << (*y != x) << std::endl;
 }
 
 

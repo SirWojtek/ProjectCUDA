@@ -4,6 +4,13 @@
 struct CellInfo
 {
 public:
+	CellInfo& operator=(CellInfo val)
+	{
+		this->row = val.row;
+		this->column = val.column;
+		this->value = val.value;
+		return *this;
+	}
 	float value;
 	int row;
 	int column;
@@ -11,9 +18,8 @@ public:
 
 class Matrix
 {
-private:
-	Matrix() { };
 public:
+	Matrix() { };
 	Matrix(std::string filename);
 	Matrix(float *inputArray, int columns, int rows);
 	Matrix(CellInfo* inputArray, int rows, int columns, int arraySize);
@@ -33,6 +39,7 @@ public:
 	int getNonZeroValuesAmount() const;
 	float getV(int row, int col) const;
 	CellInfo* getMatrix() const; 
+	Matrix* randomize() const;
 	static void matrixIntegrationTest();
 
 private:
