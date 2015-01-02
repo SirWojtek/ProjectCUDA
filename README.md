@@ -113,7 +113,7 @@ If there is any question, you are free to contact me:)
 Person       |     Task
 -------------|----------------
 SirWojtek    | 1, 5 - partially done
-Gettor       | 3, 2
+Gettor       | 4(completed), 2
 bendzasky    | 6
 
 Person      |  Computing Capability
