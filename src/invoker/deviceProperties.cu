@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include "cuda_runtime.h"
+#include "kernel\kernel.cuh"
+#include "..\matrix_loader\matrix.hpp"
 
 deviceProperties::deviceProperties() : maxNumberOfThreads_(0), deviceCount_(0)
 {
@@ -12,7 +14,23 @@ deviceProperties::deviceProperties() : maxNumberOfThreads_(0), deviceCount_(0)
 void deviceProperties::printDeviceProperties() const
 {
 	std::cout << "Number of devices: " << deviceCount_ << std::endl;
-	std::cout << "Max number of threads: " << maxNumberOfThreads_ << std::endl;
+	std::cout << "Max number of threads executed at the same time: " << maxNumberOfThreads_ << std::endl;
+}
+
+int deviceProperties::checkNumberOfThreadsExecuted()
+{
+	return StartKernel_floatWithCounter();
+}
+
+int deviceProperties::checkNumberOfThreadsExecuted(int gridSize, int blockSize, Matrix &m1, Matrix &m2)
+{
+	if (m1.getNonZeroValuesAmount() == m2.getNonZeroValuesAmount())
+		return StartKernel_floatWithCounter(gridSize, blockSize, m1, m2);
+	else
+	{
+		std::cout << "for testing number of threads executed simultaneously, both m1 and m2 need to have equal nonzero values amount" << std::endl;
+		return 0;
+	}
 }
 
 void deviceProperties::checkDevices()
@@ -40,3 +58,11 @@ void deviceProperties::checkMaxNumberOfThreads()
 	}
 }
 
+void devicePropertiesExample()
+{
+	deviceProperties properties; 
+	properties.printDeviceProperties(); 
+	Matrix m1("matrixes/olm1000.mtx"); 
+	std::cout << "Number of threads executed at the same time: " << properties.checkNumberOfThreadsExecuted(3996, 1, m1, m1) << std::endl;
+
+}

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdio.h>
 
+
 // broken kernel
 __device__ int brokenBlock = 0;
 __device__ int brokenThread = 0;
@@ -74,6 +75,14 @@ __global__ void kernel(const CellInfo  * const d_inputMatrix1,
 __global__ void kernel(const float  * const d_inputMatrix1,
 	const float  * const d_inputMatrix2, float * const d_outputMatrix)
 {
+	int index = getGlobalIdx_1D_1D();
+	d_outputMatrix[index] = sumMatrix(d_inputMatrix1, d_inputMatrix2, index);
+}
+
+__global__ void kernelWithCounter(const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix, int *current_thread_count)
+{
+	atomicAdd(current_thread_count, 1);
 	int index = getGlobalIdx_1D_1D();
 	d_outputMatrix[index] = sumMatrix(d_inputMatrix1, d_inputMatrix2, index);
 }
@@ -250,4 +259,104 @@ void testStartKernel_float()
 	cudaFree(device_mIn2);
 	cudaFree(device_mOut);
 	delete[] host_mOut;
+}
+
+int StartKernel_floatWithCounter()
+{
+	Matrix m1("matrixes/bcsstk03.mtx");
+	Matrix m2("matrixes/bcsstk03.mtx");
+
+	int arraySize = m1.getNonZeroValuesAmount();
+	int arrayBytes = arraySize * sizeof(float);
+	int tally = 0; // thread counter
+
+	// init CPU vars // no smart pointers in .cu allowed, watch out
+	float *host_mIn1 = new float[arraySize];  CellInfoToFloat(host_mIn1, m1.getMatrix(), m1.getNonZeroValuesAmount());
+	float *host_mIn2 = new float[arraySize];  CellInfoToFloat(host_mIn2, m2.getMatrix(), m2.getNonZeroValuesAmount());
+	float *host_mOut = new float[arraySize];
+
+	// init GPU vars
+	float *device_mIn1;
+	float *device_mIn2;
+	float *device_mOut;
+	int *device_tally;
+
+	// alloc GPU memory
+	gpuErrchk(cudaMalloc((void**)&device_mIn1, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&device_mIn2, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&device_mOut, arrayBytes));
+	gpuErrchk(cudaMalloc((void **)&device_tally, sizeof(int)));
+	// copy memory to device
+	gpuErrchk(cudaMemcpy(device_mIn1, host_mIn1, arrayBytes, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(device_mIn2, host_mIn2, arrayBytes, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(device_tally, &tally, sizeof(int), cudaMemcpyHostToDevice));
+
+	// launch kernel
+	//kernel << <arraySize, 1 >> >(device_mIn1, device_mIn2, device_mOut);
+	// launch kernel with error
+	kernelWithCounter << <arraySize, 1 >> >(device_mIn1, device_mIn2, device_mOut, device_tally);
+	gpuErrchk(cudaPeekAtLastError()); // debug
+
+	// copy memory from device
+	gpuErrchk(cudaMemcpy(host_mOut, device_mOut, arrayBytes, cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(&tally, device_tally, sizeof(int), cudaMemcpyDeviceToHost));
+
+	// cleaning
+	cudaFree(device_mIn1);
+	cudaFree(device_mIn2);
+	cudaFree(device_mOut);
+	cudaFree(device_tally);
+	delete[] host_mOut;
+
+	return tally;
+}
+
+
+int StartKernel_floatWithCounter(int gridSize, int blockSize, Matrix &m1, Matrix &m2)
+{
+	// IMPORTANT - m1 AND m2 NEED TO HAVE EQUAL NON ZERO VALUES AMOUNT
+
+	int arraySize = m1.getNonZeroValuesAmount();
+	int arrayBytes = arraySize * sizeof(float);
+	int tally = 0; // thread counter
+
+	// init CPU vars // no smart pointers in .cu allowed, watch out
+	float *host_mIn1 = new float[arraySize];  CellInfoToFloat(host_mIn1, m1.getMatrix(), m1.getNonZeroValuesAmount());
+	float *host_mIn2 = new float[arraySize];  CellInfoToFloat(host_mIn2, m2.getMatrix(), m2.getNonZeroValuesAmount());
+	float *host_mOut = new float[arraySize];
+
+	// init GPU vars
+	float *device_mIn1;
+	float *device_mIn2;
+	float *device_mOut;
+	int *device_tally;
+
+	// alloc GPU memory
+	gpuErrchk(cudaMalloc((void**)&device_mIn1, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&device_mIn2, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&device_mOut, arrayBytes));
+	gpuErrchk(cudaMalloc((void **)&device_tally, sizeof(int)));
+	// copy memory to device
+	gpuErrchk(cudaMemcpy(device_mIn1, host_mIn1, arrayBytes, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(device_mIn2, host_mIn2, arrayBytes, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(device_tally, &tally, sizeof(int), cudaMemcpyHostToDevice));
+
+	// launch kernel
+	//kernel << <arraySize, 1 >> >(device_mIn1, device_mIn2, device_mOut);
+	// launch kernel with error
+	kernelWithCounter << <gridSize, blockSize >> >(device_mIn1, device_mIn2, device_mOut, device_tally);
+	gpuErrchk(cudaPeekAtLastError()); // debug
+
+	// copy memory from device
+	gpuErrchk(cudaMemcpy(host_mOut, device_mOut, arrayBytes, cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(&tally, device_tally, sizeof(int), cudaMemcpyDeviceToHost));
+
+	// cleaning
+	cudaFree(device_mIn1);
+	cudaFree(device_mIn2);
+	cudaFree(device_mOut);
+	cudaFree(device_tally);
+	delete[] host_mOut;
+
+	return tally;
 }

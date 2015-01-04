@@ -34,9 +34,7 @@ void run()
 
 int main()
 {
-	deviceProperties properties; // bendzasky testing
-	properties.printDeviceProperties(); // bendzasky testing
-
+	devicePropertiesExample();
 	MatrixTest();
 	try
 	{

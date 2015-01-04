@@ -3,6 +3,7 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
+class Matrix;
 struct CellInfo;
 
 // get broken thread's global id
@@ -28,6 +29,9 @@ __global__ void kernel(const CellInfo  * const d_inputMatrix1,
 	const CellInfo  * const d_inputMatrix2, CellInfo * const d_outputMatrix);
 __global__ void kernel(const float  * const d_inputMatrix1,
 	const float  * const d_inputMatrix2, float * const d_outputMatrix);
+// kernel with counter for estimating number of threads executed
+__global__ void kernelWithCounter(const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix, int *current_thread_count);
 // wrapper for calling from cpp files
 void runKernel(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
 	const float  * const d_inputMatrix2, float * const d_outputMatrix);
@@ -51,3 +55,7 @@ void CellInfoToFloat(float * output, CellInfo * input, int arraySize);
 
 void testStartKernel_CellInfo();
 void testStartKernel_float();
+
+// launch kernels with counters
+int StartKernel_floatWithCounter();
+int StartKernel_floatWithCounter(int gridSize, int blockSize, Matrix &m1, Matrix &m2);
