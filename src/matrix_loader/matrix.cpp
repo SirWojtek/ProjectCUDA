@@ -188,13 +188,9 @@ CellInfo * Matrix::getMatrix() const
 	return this->matrix_;
 }
 
-Matrix * Matrix::randomize() const
+void Matrix::randomize() const
 {
-	Matrix* randomizedMatrix = new Matrix();
-	randomizedMatrix->nonZeroValues_ = this->nonZeroValues_;
-	randomizedMatrix->columns_ = this->columns_;
-	randomizedMatrix->rows_ = this->rows_;
-	randomizedMatrix->matrix_ = new CellInfo[randomizedMatrix->nonZeroValues_];
+	float* randomizedMatrix = new float[this->nonZeroValues_];
 	int* range = new int[this->nonZeroValues_];
 	for (int i=0; i<this->nonZeroValues_; i++)
 	{
@@ -216,12 +212,14 @@ Matrix * Matrix::randomize() const
 	}
 	for (int i=0; i<this->nonZeroValues_; i++)
 	{
-		randomizedMatrix->matrix_[i].row = this->matrix_[i].row;
-		randomizedMatrix->matrix_[i].column = this->matrix_[i].column;
-		randomizedMatrix->matrix_[i].value = this->matrix_[range[i]].value;
+		randomizedMatrix[i] = this->matrix_[range[i]].value;
+	}
+	for (int i=0; i<this->nonZeroValues_; i++)
+	{
+		this->matrix_[i].value = randomizedMatrix[i];
 	}
 	delete[] range;
-	return randomizedMatrix;
+	delete[] randomizedMatrix;
 }
 
 int Matrix::countNonZeroValuesAmount(float * inputArray, int arraySize) // Why is this a Matrix member function? - SD
@@ -258,11 +256,12 @@ void BasicTests()
 	// std::cout << "Printing whole matrix:" << std::endl;
 	// std::cout << x;
 	std::cout << "Randomizing matrix:" << std::endl;
-	Matrix * y = x.randomize();
+	Matrix y("matrixes/bcsstk03.mtx");
+	y.randomize();
 	// std::cout << "Printing randomized matrix:" << std::endl;
 	// std::cout << *y;
 	std::cout << "Checking if randomize actually did its job:" << std::endl;
-	std::cout << (*y != x) << std::endl;
+	std::cout << (y != x) << std::endl;
 }
 
 

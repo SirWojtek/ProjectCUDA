@@ -32,7 +32,7 @@ public:
 	int getNonZeroValuesAmount() const;
 	float getV(int row, int col) const;
 	CellInfo* getMatrix() const; 
-	Matrix* randomize() const;
+	void randomize() const;
 	static void matrixIntegrationTest();
 
 private:
