@@ -9,7 +9,7 @@
 
 // broken kernel
 __device__ int brokenBlock = 0;
-__device__ int brokenThread = 0;
+__device__ int brokenThread = 15;
 
 __device__ int getErrorIdx_1D_1D()
 {

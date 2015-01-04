@@ -1,41 +1,42 @@
 #include <iostream>
 #include <string>
 #include <exception>
+#include <fstream>
 
 #include "device_launch_parameters.h"
 #include "invoker\KernelInvoker.hpp"
 
-#include "invoker\deviceProperties.cuh"// bendzasky testing
-
-#define FireMatrixDebugSession "true"
+#include "invoker\deviceProperties.cuh"
 
 void MatrixTest()
 {
-	if (FireMatrixDebugSession == "true")
-	{
-		Matrix::matrixIntegrationTest();
-		system("pause");
-		exit(0);
-	}
+	Matrix::matrixIntegrationTest();
+	system("pause");
+	exit(0);
 }
 
 void run()
 {
+	std::ofstream file("result.log");
+
+	deviceProperties properties;
+	properties.printDeviceProperties();
+
 	Matrix h_in1("matrixes/bcsstk03.mtx");
 	Matrix h_in2("matrixes/bcsstk03.mtx");
 
-	dim3 gridSize(h_in1.getColumns(), h_in2.getRows(),1);
-	dim3 blockSize(1, 1, 1);
+	file << h_in1 << std::endl << std::endl << h_in2 << std::endl << std::endl;
 
-	KernelInvoker invoker(gridSize, 0.0);
+	KernelInvoker invoker(properties.getMaxNumberOfThreads());
 
-	invoker.compute(h_in1, h_in2);
+	Matrix result = invoker.compute(h_in1, h_in2);
+	file << result << std::endl;
 }
 
 int main()
 {
-	devicePropertiesExample();
-	MatrixTest();
+	// devicePropertiesExample();
+	// MatrixTest();
 	try
 	{
 		run();

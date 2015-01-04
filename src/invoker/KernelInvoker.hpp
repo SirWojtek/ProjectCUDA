@@ -37,9 +37,9 @@ struct MatrixData
 class KernelInvoker
 {
 public:
-	KernelInvoker(dim3 blockSize, float redundantPercent);
+	KernelInvoker(unsigned maxThreadNumber);
 	~KernelInvoker();
-	void compute(const Matrix& m1, const Matrix& m2);
+	Matrix compute(const Matrix& m1, const Matrix& m2);
 
 private:
 	bool areMatrixesEqual(const Matrix& m1, const Matrix& m2);
@@ -52,6 +52,8 @@ private:
 	void copyToDevice();
 	void runKernels();
 	void copyResultToHost();
+	void checkForErrors();
+	void printErrorPosition(unsigned errorPos);
 	Matrix getOutputMatrix(unsigned rowNo, unsigned colNo);
 	bool isResultCorrect_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult);
 	
@@ -64,6 +66,5 @@ private:
 	float* deviceTable2_;
 	float* deviceOutputTable_;
 
-	dim3 blockSize_;
-	float redundant_;
+	unsigned maxThreadNumber_;
 };

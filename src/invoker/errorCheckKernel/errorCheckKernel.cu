@@ -20,7 +20,7 @@ __device__ int getIdx_2D_2D()
 __device__ bool compareValues(const float  * const d_inputMatrix1,
 	const float  * const d_inputMatrix2)
 {
-	return (*d_inputMatrix1 == *d_inputMatrix2);
+	return (*d_inputMatrix1 - *d_inputMatrix2 > 0.001);
 }
 
 __global__ void errorCheckKernel(const float  * const d_inputMatrix1,
@@ -35,11 +35,6 @@ void runErrorCheckKernel(dim3 gridSize, dim3 blockSize, const float  * const d_i
 {
 	errorCheckKernel << < gridSize, blockSize >> > (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
 }
-
-
-
-
-
 
 void CellInfoToFloatE(float * output, CellInfo * input, int arraySize)
 {

@@ -1,17 +1,18 @@
-
 #include "KernelInvoker.hpp"
+#include "ErrorChecker.hpp"
 
 #include <exception>
-#include <fstream>
 #include <assert.h>
 #include <algorithm>
+#include <iostream>
 
 #include "device_launch_parameters.h"
 #include "../matrix_loader/matrix.hpp"
 #include "kernel/kernel.cuh"
 #include "kernelCommon/gpuErrchk.cuh"
-KernelInvoker::KernelInvoker(dim3 blockSize, float redundant) :
-	blockSize_(blockSize), redundant_(redundant),
+
+KernelInvoker::KernelInvoker(unsigned maxThreadNumber) :
+	maxThreadNumber_(maxThreadNumber),
 	deviceTable1_(NULL), deviceTable2_(NULL) ,deviceOutputTable_(NULL) {}
 
 KernelInvoker::~KernelInvoker()
@@ -21,9 +22,10 @@ KernelInvoker::~KernelInvoker()
 	cudaFree(deviceOutputTable_);
 }
 
-void KernelInvoker::compute(const Matrix& m1, const Matrix& m2)
+Matrix KernelInvoker::compute(const Matrix& m1, const Matrix& m2)
 {
-	// Make sure arrays have same dimensions
+	std::cout << "Matrix adding started" << std::endl;
+
 	if (!areMatrixesEqual(m1, m2))
 	{
 		throw std::runtime_error("Matrix dimensions are not equal");
@@ -31,11 +33,13 @@ void KernelInvoker::compute(const Matrix& m1, const Matrix& m2)
 
 	init(m1, m2);
 	runKernels();
-	
-	Matrix mOutput = getOutputMatrix(m1.getRows(), m1.getColumns());
 
-	// TODO: write method in Matrix thats print matrixes (operator <<)
-	// std::cout << mOutput;
+	// This computation is only for check if error was corrected
+	// There is no need to compute timing for it or run it on stream
+	std::cout << "Computation done, checking for errors" << std::endl;
+	checkForErrors();
+	
+	return getOutputMatrix(m1.getRows(), m1.getColumns());
 }
 
 bool KernelInvoker::areMatrixesEqual(const Matrix& m1, const Matrix& m2)
@@ -58,6 +62,7 @@ void KernelInvoker::readDataFromMatrixes(const Matrix& m1, const Matrix& m2)
 
 	makeSameLength(hostInputMatrix1_, hostInputMatrix2_);
 	arraySize_ = hostInputMatrix1_.dataVector.size();
+	hostOutputMatrix_.positionVector = hostInputMatrix1_.positionVector;
 }
 
 void KernelInvoker::readDataFromMatrix(const Matrix& m1, MatrixData& output)
@@ -122,6 +127,31 @@ void KernelInvoker::copyResultToHost()
 	gpuErrchk(cudaMemcpy(hostOutputMatrix_.getRawTable(), deviceOutputTable_, arrayBytes_, cudaMemcpyDeviceToHost));
 }
 
+void KernelInvoker::checkForErrors()
+{
+	ErrorChecker checker(deviceTable1_, deviceTable2_, arraySize_, 0.01);
+	checker.init();
+
+	int errorPosition = checker.getErrorPosition(deviceOutputTable_);;
+
+	if (errorPosition == -1)
+	{
+		std::cout << "No error detected" << std::endl;
+		return;
+	}
+	
+	printErrorPosition(errorPosition);
+}
+
+void KernelInvoker::printErrorPosition(unsigned errorPos)
+{
+	const unsigned& rowErrorPosition = hostOutputMatrix_.positionVector[errorPos].first;
+	const unsigned& colErrorPosition = hostOutputMatrix_.positionVector[errorPos].second;
+
+	std::cout << "Error detected at position [ "
+		<< rowErrorPosition << ", " << colErrorPosition << " ]" << std::endl;
+}
+
 Matrix KernelInvoker::getOutputMatrix(unsigned rowNo, unsigned colNo)
 {
 	CellInfo* info = new CellInfo[arraySize_];
@@ -131,8 +161,8 @@ Matrix KernelInvoker::getOutputMatrix(unsigned rowNo, unsigned colNo)
 	for (unsigned i = 0; i < arraySize_; i++)
 	{
 		info[i].value = rawTable[i];
-		info[i].row = hostOutputMatrix_.positionVector[0].first;
-		info[i].column = hostOutputMatrix_.positionVector[0].second;
+		info[i].row = hostOutputMatrix_.positionVector[i].first;
+		info[i].column = hostOutputMatrix_.positionVector[i].second;
 	}
 
 	return Matrix(info, rowNo, colNo, arraySize_);

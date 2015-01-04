@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="invoker\ErrorChecker.cpp" />
     <ClCompile Include="invoker\KernelInvoker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="matrix_loader\matrix.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="invoker\deviceProperties.cuh" />
+    <ClInclude Include="invoker\ErrorChecker.hpp" />
     <ClInclude Include="invoker\errorCheckKernel\errorCheckKernel.cuh" />
     <ClInclude Include="invoker\kernelCommon\gpuErrchk.cuh" />
     <ClInclude Include="invoker\KernelInvoker.hpp" />
