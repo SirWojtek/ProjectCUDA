@@ -100,7 +100,7 @@ Struct defining single cell:
 	- DONE - Randomized matrix will have the same columns + rows but with mixed values. These columns and rows will be on the same CellInfo index as before randomization but with different value (from another CellInfo index)
 4. Error recognition
 	- read error checker description above
-5.Run redundant computing when kernels are free
+5. Run redundant computing when kernels are free
 	-  detecting number of kernels,
 	-  depends of kernel number divide computing task to parts,
 	-  when there are free kernels run redundant computation
