@@ -108,14 +108,14 @@ Struct defining single cell:
 Please assign yourself to one task.
 
 
-**Next deadline: 19.12.2014**
+**Next deadline: 09.01.2015**
 If there is any question, you are free to contact me:)
 
 Person       |     Task
 -------------|----------------
-SirWojtek    | 1, 5 - partially done
-Gettor       | 3(completed), 2
-bendzasky    | 6
+SirWojtek    | 1
+Gettor       | 2
+bendzasky    | 5
 
 Person      |  Computing Capability
 ------------|----------------------
