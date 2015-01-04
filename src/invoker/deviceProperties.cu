@@ -62,7 +62,7 @@ void devicePropertiesExample()
 {
 	deviceProperties properties; 
 	properties.printDeviceProperties(); 
-	Matrix m1("matrixes/olm1000.mtx"); 
-	std::cout << "Number of threads executed: " << properties.checkNumberOfThreadsExecuted(3996, 1, m1, m1) << std::endl;
+	Matrix m1("matrixes/bcsstk03.mtx"); 
+	std::cout << "Number of threads executed: " << properties.checkNumberOfThreadsExecuted(376, 1, m1, m1) << std::endl;
 
 }
