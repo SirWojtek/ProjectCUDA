@@ -63,6 +63,6 @@ void devicePropertiesExample()
 	deviceProperties properties; 
 	properties.printDeviceProperties(); 
 	Matrix m1("matrixes/olm1000.mtx"); 
-	std::cout << "Number of threads executed at the same time: " << properties.checkNumberOfThreadsExecuted(3996, 1, m1, m1) << std::endl;
+	std::cout << "Number of threads executed: " << properties.checkNumberOfThreadsExecuted(3996, 1, m1, m1) << std::endl;
 
 }
