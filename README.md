@@ -108,7 +108,7 @@ Struct defining single cell:
 Please assign yourself to one task.
 
 
-**Next deadline: 09.01.2015**
+**Next deadline: 16.01.2015**
 If there is any question, you are free to contact me:)
 
 Person       |     Task
