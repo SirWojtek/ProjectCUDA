@@ -13,13 +13,17 @@
 
 KernelInvoker::KernelInvoker(unsigned maxThreadNumber) :
 	maxThreadNumber_(maxThreadNumber),
-	deviceTable1_(NULL), deviceTable2_(NULL) ,deviceOutputTable_(NULL) {}
+	deviceTable1_(NULL),
+	deviceTable2_(NULL),
+	deviceOutputTable2_(NULL),
+	deviceOutputTable1_(NULL) { }
 
 KernelInvoker::~KernelInvoker()
 {
 	cudaFree(deviceTable1_);
 	cudaFree(deviceTable2_);
-	cudaFree(deviceOutputTable_);
+	cudaFree(deviceOutputTable1_);
+	cudaFree(deviceOutputTable2_);
 }
 
 Matrix KernelInvoker::compute(const Matrix& m1, const Matrix& m2)
@@ -52,7 +56,7 @@ void KernelInvoker::init(const Matrix& m1, const Matrix& m2)
 	readDataFromMatrixes(m1, m2);
 	hostOutputMatrix_.resize(arraySize_);
 	initDevice();
-	copyToDevice();
+	//copyToDevice();
 }
 
 void KernelInvoker::readDataFromMatrixes(const Matrix& m1, const Matrix& m2)
@@ -102,7 +106,8 @@ void KernelInvoker::initDevice()
 
 	gpuErrchk(cudaMalloc((void**)&deviceTable1_, arrayBytes_));
 	gpuErrchk(cudaMalloc((void**)&deviceTable2_, arrayBytes_));
-	gpuErrchk(cudaMalloc((void**)&deviceOutputTable_, arrayBytes_));
+	gpuErrchk(cudaMalloc((void**)&deviceOutputTable1_, arrayBytes_));
+	gpuErrchk(cudaMalloc((void**)&deviceOutputTable2_, arrayBytes_));
 }
 
 void KernelInvoker::copyToDevice()
@@ -117,14 +122,15 @@ void KernelInvoker::runKernels()
 	const dim3 blockSize(1, 1, 1);
 
 	// using of kernel invocator wrapper
-	runKernelPlusError(gridSize, blockSize, deviceTable1_, deviceTable2_, deviceOutputTable_);
+	runCommandCenter(gridSize, blockSize, deviceTable1_, deviceTable2_, deviceOutputTable1_,
+		deviceOutputTable2_, arrayBytes_, hostInputMatrix1_.getRawTable(), hostInputMatrix2_.getRawTable());
 	gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
 	copyResultToHost();
 }
 
 void KernelInvoker::copyResultToHost()
 {
-	gpuErrchk(cudaMemcpy(hostOutputMatrix_.getRawTable(), deviceOutputTable_, arrayBytes_, cudaMemcpyDeviceToHost));
+	gpuErrchk(cudaMemcpy(hostOutputMatrix_.getRawTable(), deviceOutputTable1_, arrayBytes_, cudaMemcpyDeviceToHost));
 }
 
 void KernelInvoker::checkForErrors()
@@ -132,7 +138,7 @@ void KernelInvoker::checkForErrors()
 	ErrorChecker checker(deviceTable1_, deviceTable2_, arraySize_, 0.01);
 	checker.init();
 
-	int errorPosition = checker.getErrorPosition(deviceOutputTable_);;
+	int errorPosition = checker.getErrorPosition(deviceOutputTable1_);;
 
 	if (errorPosition == -1)
 	{

@@ -44,7 +44,13 @@ __global__ void kernelPlusError(const float  * const d_inputMatrix1,
 	const float  * const d_inputMatrix2, float * const d_outputMatrix);
 // wrapper for calling from cpp files
 void runKernelPlusError(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
-	const float  * const d_inputMatrix2, float * const d_outputMatrix);
+	const float  * const d_inputMatrix2, float * const d_outputMatrix, 
+	int arrayBytes, float * d_hostMatrix1, float * d_hostMatrix2,
+	cudaStream_t * stream);
+
+void runCommandCenter(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix, float * const d_outputMatrix2,
+	int arrayBytes, float * d_hostMatrix1, float * d_hostMatrix2);
 
 // wrappers for C++ class calling kernel
 //void runKernel(dim3 gridSize, dim3 blockSize, float* in1, float* in2, float* out);

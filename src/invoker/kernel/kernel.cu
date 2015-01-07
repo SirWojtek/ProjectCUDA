@@ -1,4 +1,3 @@
-
 #include "kernel.cuh"
 #include "..\kernelCommon\gpuErrchk.cuh"
 #include "..\..\matrix_loader\matrix.hpp"
@@ -45,7 +44,6 @@ __device__ float sumMatrix(const float * const d_inputMatrix1, const float * con
 	return result;
 }
 
-
 __device__ bool isError(int index)
 {
 	if (index == getErrorIdx_1D_1D())
@@ -63,7 +61,6 @@ __device__ void injectError(float *inputCell)
 {
 	*inputCell += 99999999;
 }
-
 
 __global__ void kernel(const CellInfo  * const d_inputMatrix1,
 	const CellInfo  * const d_inputMatrix2, CellInfo * const d_outputMatrix)
@@ -112,12 +109,66 @@ __global__ void kernelPlusError(const float  * const d_inputMatrix1,
 }
 
 void runKernelPlusError(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
-	const float  * const d_inputMatrix2, float * const d_outputMatrix)
+	const float  * const d_inputMatrix2, float * const d_outputMatrix, 
+	int arrayBytes, float * d_hostMatrix1, float * d_hostMatrix2,
+	cudaStream_t * stream)
 {
-	kernelPlusError <<< gridSize, blockSize >>> (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
+	gpuErrchk(cudaMemcpyAsync((void**)d_inputMatrix1, d_hostMatrix1, arrayBytes, cudaMemcpyHostToDevice, *stream));
+	gpuErrchk(cudaMemcpyAsync((void**)d_inputMatrix2, d_hostMatrix2, arrayBytes, cudaMemcpyHostToDevice, *stream));
+
+	kernelPlusError <<< gridSize, blockSize, 0, *stream >>> (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
 }
 
-//
+void runCommandCenter(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
+	const float  * const d_inputMatrix2, float * const d_outputMatrix, float * const d_outputMatrix2,  
+	int arrayBytes, float * d_hostMatrix1, float * d_hostMatrix2)
+{
+	cudaStream_t stream[2];
+	float * redundantMatrix1;
+	float * redundantMatrix2;
+	gpuErrchk(cudaMalloc((void**)&redundantMatrix1, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&redundantMatrix2, arrayBytes));
+
+	cudaEvent_t start[2], stop[2];
+	float timer[2];
+
+	cudaStreamCreate(&stream[0]);
+	cudaStreamCreate(&stream[1]);
+
+	cudaEventCreate(&start[0]);
+  	cudaEventRecord(start[0], stream[0]);
+
+	gpuErrchk(cudaMemcpyAsync((void**)d_inputMatrix1, d_hostMatrix1, arrayBytes, cudaMemcpyHostToDevice, stream[0]));
+	gpuErrchk(cudaMemcpyAsync((void**)d_inputMatrix2, d_hostMatrix2, arrayBytes, cudaMemcpyHostToDevice, stream[0]));
+	kernelPlusError <<< gridSize, blockSize, 0, stream[0] >>> (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
+
+	cudaEventCreate(&stop[0]);
+	cudaEventRecord(stop[0],stream[0]);
+	cudaEventSynchronize(stop[0]);
+
+	cudaEventCreate(&start[1]);
+  	cudaEventRecord(start[1], stream[1]);
+
+	gpuErrchk(cudaMemcpyAsync((void**)redundantMatrix1, d_hostMatrix1, arrayBytes, cudaMemcpyHostToDevice, stream[1]));
+	gpuErrchk(cudaMemcpyAsync((void**)redundantMatrix2, d_hostMatrix2, arrayBytes, cudaMemcpyHostToDevice, stream[1]));
+	kernel <<< gridSize, blockSize, 0, stream[1] >>> (redundantMatrix1, redundantMatrix2, d_outputMatrix2);	
+
+
+	cudaEventCreate(&stop[1]);
+	cudaEventRecord(stop[1],stream[1]);
+	cudaEventSynchronize(stop[1]);
+
+	cudaStreamDestroy(stream[0]);
+	cudaStreamDestroy(stream[1]);
+	cudaEventElapsedTime(&timer[0], start[0],stop[0]);
+	cudaEventElapsedTime(&timer[1], start[1],stop[1]);
+	std::cout << "Error calculation time [ms]: " << timer[0] << std::endl;
+	std::cout << "Redundant calculation time [ms]: " << timer[1] << std::endl;
+
+	cudaFree(redundantMatrix1);
+	cudaFree(redundantMatrix2);
+}
+
 //void runKernel(dim3 gridSize, dim3 blockSize, float* in1, float* in2, float* out)
 //{
 //	cudaEvent_t start, stop; // Mam pewne obawy przed wyrzucaniem tego do osobnych funkcji, ¿eby nie zajmowa³o niepotrzebnie czasu systemowego

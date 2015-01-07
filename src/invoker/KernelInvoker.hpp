@@ -56,7 +56,7 @@ private:
 	void printErrorPosition(unsigned errorPos);
 	Matrix getOutputMatrix(unsigned rowNo, unsigned colNo);
 	bool isResultCorrect_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult);
-	
+
 	MatrixData hostInputMatrix1_;
 	MatrixData hostInputMatrix2_;
 	MatrixData hostOutputMatrix_;
@@ -64,7 +64,8 @@ private:
 	unsigned arraySize_, arrayBytes_;
 	float* deviceTable1_;
 	float* deviceTable2_;
-	float* deviceOutputTable_;
+	float* deviceOutputTable1_;
+	float* deviceOutputTable2_;
 
 	unsigned maxThreadNumber_;
 };
