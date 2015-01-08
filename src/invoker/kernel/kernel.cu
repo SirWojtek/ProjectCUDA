@@ -8,7 +8,7 @@
 
 // broken kernel
 __device__ int brokenBlock = 0;
-__device__ int brokenThread = 15;
+__device__ int brokenThread = 1;
 
 __device__ int getErrorIdx_1D_1D()
 {
@@ -119,13 +119,27 @@ void runKernelPlusError(dim3 gridSize, dim3 blockSize, const float  * const d_in
 	kernelPlusError <<< gridSize, blockSize, 0, *stream >>> (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
 }
 
-void runCommandCenter(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
-	const float  * const d_inputMatrix2, float * const d_outputMatrix, float * const d_outputMatrix2,  
-	int arrayBytes, float * d_hostMatrix1, float * d_hostMatrix2)
+void runCommandCenter(dim3 gridSize, dim3 blockSize, int arraySize,
+	const float * hostInputMatrix1, const float * hostInputMatrix2,
+	float* hostOutputMatrix, float* hostRedundantMatrix)
 {
+	int arrayBytes = arraySize * sizeof(float);
 	cudaStream_t stream[2];
+
+	// input (device)
+	float * inputMatrix1;
+	float * inputMatrix2;
 	float * redundantMatrix1;
 	float * redundantMatrix2;
+	// output (device)
+	float * outputMatrix1;
+	float * outputMatrix2;
+
+
+	gpuErrchk(cudaMalloc((void**)&inputMatrix1, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&inputMatrix2, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&outputMatrix1, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&outputMatrix2, arrayBytes));
 	gpuErrchk(cudaMalloc((void**)&redundantMatrix1, arrayBytes));
 	gpuErrchk(cudaMalloc((void**)&redundantMatrix2, arrayBytes));
 
@@ -138,10 +152,9 @@ void runCommandCenter(dim3 gridSize, dim3 blockSize, const float  * const d_inpu
 	cudaEventCreate(&start[0]);
   	cudaEventRecord(start[0], stream[0]);
 
-	gpuErrchk(cudaMemcpyAsync((void**)d_inputMatrix1, d_hostMatrix1, arrayBytes, cudaMemcpyHostToDevice, stream[0]));
-	gpuErrchk(cudaMemcpyAsync((void**)d_inputMatrix2, d_hostMatrix2, arrayBytes, cudaMemcpyHostToDevice, stream[0]));
-	kernelPlusError <<< gridSize, blockSize, 0, stream[0] >>> (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
-
+	gpuErrchk(cudaMemcpyAsync((void**)inputMatrix1, hostInputMatrix1, arrayBytes, cudaMemcpyHostToDevice, stream[0]));
+	gpuErrchk(cudaMemcpyAsync((void**)inputMatrix2, hostInputMatrix2, arrayBytes, cudaMemcpyHostToDevice, stream[0]));
+	kernelPlusError <<< gridSize, blockSize, 0, stream[0] >>> (inputMatrix1, inputMatrix2, outputMatrix1);
 	cudaEventCreate(&stop[0]);
 	cudaEventRecord(stop[0],stream[0]);
 	cudaEventSynchronize(stop[0]);
@@ -149,14 +162,16 @@ void runCommandCenter(dim3 gridSize, dim3 blockSize, const float  * const d_inpu
 	cudaEventCreate(&start[1]);
   	cudaEventRecord(start[1], stream[1]);
 
-	gpuErrchk(cudaMemcpyAsync((void**)redundantMatrix1, d_hostMatrix1, arrayBytes, cudaMemcpyHostToDevice, stream[1]));
-	gpuErrchk(cudaMemcpyAsync((void**)redundantMatrix2, d_hostMatrix2, arrayBytes, cudaMemcpyHostToDevice, stream[1]));
-	kernel <<< gridSize, blockSize, 0, stream[1] >>> (redundantMatrix1, redundantMatrix2, d_outputMatrix2);	
-
+	gpuErrchk(cudaMemcpyAsync((void**)redundantMatrix1, hostInputMatrix1, arrayBytes, cudaMemcpyHostToDevice, stream[1]));
+	gpuErrchk(cudaMemcpyAsync((void**)redundantMatrix2, hostInputMatrix2, arrayBytes, cudaMemcpyHostToDevice, stream[1]));
+	kernel <<< gridSize, blockSize, 0, stream[1] >>> (redundantMatrix1, redundantMatrix2, outputMatrix2);	
 
 	cudaEventCreate(&stop[1]);
 	cudaEventRecord(stop[1],stream[1]);
 	cudaEventSynchronize(stop[1]);
+
+	gpuErrchk(cudaMemcpyAsync(hostOutputMatrix, outputMatrix1, arrayBytes, cudaMemcpyDeviceToHost, stream[0]));
+	gpuErrchk(cudaMemcpyAsync(hostRedundantMatrix, outputMatrix2, arrayBytes, cudaMemcpyDeviceToHost, stream[1]));
 
 	cudaStreamDestroy(stream[0]);
 	cudaStreamDestroy(stream[1]);
@@ -165,46 +180,13 @@ void runCommandCenter(dim3 gridSize, dim3 blockSize, const float  * const d_inpu
 	std::cout << "Error calculation time [ms]: " << timer[0] << std::endl;
 	std::cout << "Redundant calculation time [ms]: " << timer[1] << std::endl;
 
+	cudaFree(inputMatrix1);
+	cudaFree(inputMatrix2);
 	cudaFree(redundantMatrix1);
 	cudaFree(redundantMatrix2);
+	cudaFree(outputMatrix1);
+	cudaFree(outputMatrix2);
 }
-
-//void runKernel(dim3 gridSize, dim3 blockSize, float* in1, float* in2, float* out)
-//{
-//	cudaEvent_t start, stop; // Mam pewne obawy przed wyrzucaniem tego do osobnych funkcji, ¿eby nie zajmowa³o niepotrzebnie czasu systemowego
-//	float time;
-//	cudaEventCreate(&start);
-//	cudaEventCreate(&stop);
-//
-//	cudaEventRecord(start, 0);
-//
-//	matrixOperation <<< gridSize, blockSize >>>(in1, in2, out);
-//
-//	cudaEventRecord(stop, 0);
-//	cudaEventSynchronize(stop);
-//
-//	cudaEventElapsedTime(&time, start, stop);
-//	std::cout << "Time for the Kernel: " << time << std::endl;
-//}
-//
-//void runKernelWithError(dim3 gridSize, dim3 blockSize, float* in1, float* in2,
-//	float* out, float* error)
-//{
-//	cudaEvent_t start, stop;
-//	float time;
-//	cudaEventCreate(&start);
-//	cudaEventCreate(&stop);
-//
-//	cudaEventRecord(start, 0);
-//
-//	matrixOperation <<< gridSize, blockSize >>>(in1, in2, out, error);
-//
-//	cudaEventRecord(stop, 0);
-//	cudaEventSynchronize(stop);
-//
-//	cudaEventElapsedTime(&time, start, stop);
-//	std::cout << "Time for the ErrorKernel: " << time << std::endl;
-//}
 
 void CellInfoToFloat(float * output, CellInfo * input, int arraySize)
 {

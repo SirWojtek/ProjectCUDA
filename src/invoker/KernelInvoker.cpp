@@ -12,18 +12,14 @@
 #include "kernelCommon/gpuErrchk.cuh"
 
 KernelInvoker::KernelInvoker(unsigned maxThreadNumber) :
-	maxThreadNumber_(maxThreadNumber),
-	deviceTable1_(NULL),
-	deviceTable2_(NULL),
-	deviceOutputTable2_(NULL),
-	deviceOutputTable1_(NULL) { }
+	maxThreadNumber_(maxThreadNumber)
+{
+	redundantData_ = new float[maxThreadNumber_];
+}
 
 KernelInvoker::~KernelInvoker()
 {
-	cudaFree(deviceTable1_);
-	cudaFree(deviceTable2_);
-	cudaFree(deviceOutputTable1_);
-	cudaFree(deviceOutputTable2_);
+	delete[] redundantData_;
 }
 
 Matrix KernelInvoker::compute(const Matrix& m1, const Matrix& m2)
@@ -55,8 +51,6 @@ void KernelInvoker::init(const Matrix& m1, const Matrix& m2)
 {
 	readDataFromMatrixes(m1, m2);
 	hostOutputMatrix_.resize(arraySize_);
-	initDevice();
-	//copyToDevice();
 }
 
 void KernelInvoker::readDataFromMatrixes(const Matrix& m1, const Matrix& m2)
@@ -100,62 +94,33 @@ void KernelInvoker::addZeroValuesOnNotExistingPosition(MatrixData& m1, MatrixDat
 	}
 }
 
-void KernelInvoker::initDevice()
-{
-	arrayBytes_ = arraySize_ * sizeof(float);
-
-	gpuErrchk(cudaMalloc((void**)&deviceTable1_, arrayBytes_));
-	gpuErrchk(cudaMalloc((void**)&deviceTable2_, arrayBytes_));
-	gpuErrchk(cudaMalloc((void**)&deviceOutputTable1_, arrayBytes_));
-	gpuErrchk(cudaMalloc((void**)&deviceOutputTable2_, arrayBytes_));
-}
-
-void KernelInvoker::copyToDevice()
-{
-	gpuErrchk(cudaMemcpy(deviceTable1_, hostInputMatrix1_.getRawTable(), arrayBytes_, cudaMemcpyHostToDevice));
-	gpuErrchk(cudaMemcpy(deviceTable2_, hostInputMatrix2_.getRawTable(), arrayBytes_, cudaMemcpyHostToDevice));
-}
-
 void KernelInvoker::runKernels()
 {
 	const dim3 gridSize(arraySize_, 1, 1);
 	const dim3 blockSize(1, 1, 1);
 
 	// using of kernel invocator wrapper
-	runCommandCenter(gridSize, blockSize, deviceTable1_, deviceTable2_, deviceOutputTable1_,
-		deviceOutputTable2_, arrayBytes_, hostInputMatrix1_.getRawTable(), hostInputMatrix2_.getRawTable());
+	runCommandCenter(gridSize, blockSize, arraySize_,
+		hostInputMatrix1_.getRawTable(), hostInputMatrix2_.getRawTable(),
+		hostOutputMatrix_.getRawTable(), redundantData_);
 	gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
-	copyResultToHost();
-}
-
-void KernelInvoker::copyResultToHost()
-{
-	gpuErrchk(cudaMemcpy(hostOutputMatrix_.getRawTable(), deviceOutputTable1_, arrayBytes_, cudaMemcpyDeviceToHost));
 }
 
 void KernelInvoker::checkForErrors()
 {
-	ErrorChecker checker(deviceTable1_, deviceTable2_, arraySize_, 0.01);
+	ErrorChecker checker(hostInputMatrix1_, hostInputMatrix2_, arraySize_);
 	checker.init();
 
-	int errorPosition = checker.getErrorPosition(deviceOutputTable1_);;
+	std::pair<unsigned, unsigned> errorPosition = checker.getErrorPosition(hostOutputMatrix_);;
 
-	if (errorPosition == -1)
+	if (errorPosition.first == -1 || errorPosition.second == -1)
 	{
 		std::cout << "No error detected" << std::endl;
 		return;
 	}
 	
-	printErrorPosition(errorPosition);
-}
-
-void KernelInvoker::printErrorPosition(unsigned errorPos)
-{
-	const unsigned& rowErrorPosition = hostOutputMatrix_.positionVector[errorPos].first;
-	const unsigned& colErrorPosition = hostOutputMatrix_.positionVector[errorPos].second;
-
 	std::cout << "Error detected at position [ "
-		<< rowErrorPosition << ", " << colErrorPosition << " ]" << std::endl;
+		<< errorPosition.first << ", " << errorPosition.second << " ]" << std::endl;
 }
 
 Matrix KernelInvoker::getOutputMatrix(unsigned rowNo, unsigned colNo)
@@ -172,10 +137,4 @@ Matrix KernelInvoker::getOutputMatrix(unsigned rowNo, unsigned colNo)
 	}
 
 	return Matrix(info, rowNo, colNo, arraySize_);
-}
-
-bool KernelInvoker::isResultCorrect_Add(const Matrix& m1, const Matrix& m2, const Matrix& mResult)
-{
-	// TODO: write kernel, that checks if two vectors are identical
-	return false;
 }

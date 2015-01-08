@@ -31,6 +31,7 @@
     <ClInclude Include="invoker\kernelCommon\gpuErrchk.cuh" />
     <ClInclude Include="invoker\KernelInvoker.hpp" />
     <ClInclude Include="invoker\kernel\kernel.cuh" />
+    <ClInclude Include="invoker\MatrixData.hpp" />
     <ClInclude Include="matrix_loader\matrix.hpp" />
   </ItemGroup>
   <ItemGroup>

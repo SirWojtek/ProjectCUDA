@@ -48,9 +48,9 @@ void runKernelPlusError(dim3 gridSize, dim3 blockSize, const float  * const d_in
 	int arrayBytes, float * d_hostMatrix1, float * d_hostMatrix2,
 	cudaStream_t * stream);
 
-void runCommandCenter(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
-	const float  * const d_inputMatrix2, float * const d_outputMatrix, float * const d_outputMatrix2,
-	int arrayBytes, float * d_hostMatrix1, float * d_hostMatrix2);
+void runCommandCenter(dim3 gridSize, dim3 blockSize, int arrayBytes,
+	const float * hostInputMatrix1, const float * hostInputMatrix2,
+	float* hostOutputMatrix, float* hostRedundantMatrix);
 
 // wrappers for C++ class calling kernel
 //void runKernel(dim3 gridSize, dim3 blockSize, float* in1, float* in2, float* out);
