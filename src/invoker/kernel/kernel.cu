@@ -108,21 +108,53 @@ __global__ void kernelPlusError(const float  * const d_inputMatrix1,
 		injectError(&d_outputMatrix[index]);
 }
 
-void runKernelPlusError(dim3 gridSize, dim3 blockSize, const float  * const d_inputMatrix1,
-	const float  * const d_inputMatrix2, float * const d_outputMatrix, 
-	int arrayBytes, float * d_hostMatrix1, float * d_hostMatrix2,
-	cudaStream_t * stream)
+void runKernelPlusError(dim3 gridSize, int arraySize,
+	const float * hostInputMatrix1, const float * hostInputMatrix2,
+	float* hostOutputMatrix)
 {
-	gpuErrchk(cudaMemcpyAsync((void**)d_inputMatrix1, d_hostMatrix1, arrayBytes, cudaMemcpyHostToDevice, *stream));
-	gpuErrchk(cudaMemcpyAsync((void**)d_inputMatrix2, d_hostMatrix2, arrayBytes, cudaMemcpyHostToDevice, *stream));
+	int arrayBytes = arraySize * sizeof(float);
+	float * inputMatrix1;
+	float * inputMatrix2;
+	float * outputMatrix;
+	dim3 blockSize(1, 1, 1);
+	//cudaEvent_t start, stop;
+	//cudaEventCreate(&start);
+	//cudaEventCreate(&stop);
+	//float timer;
 
-	kernelPlusError <<< gridSize, blockSize, 0, *stream >>> (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
+	gpuErrchk(cudaMalloc((void**)&inputMatrix1, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&inputMatrix2, arrayBytes));
+	gpuErrchk(cudaMalloc((void**)&outputMatrix, arrayBytes));
+
+	//cudaEventRecord(start, 0);
+
+	gpuErrchk(cudaMemcpy(inputMatrix1, hostInputMatrix1, arrayBytes, cudaMemcpyHostToDevice));
+	gpuErrchk(cudaMemcpy(inputMatrix2, hostInputMatrix2, arrayBytes, cudaMemcpyHostToDevice));
+
+	kernelPlusError <<< gridSize, blockSize >>> (inputMatrix1, inputMatrix2, outputMatrix);
+
+	gpuErrchk(cudaMemcpy(hostOutputMatrix, outputMatrix, arrayBytes, cudaMemcpyDeviceToHost));
+
+	//cudaEventRecord(stop, 0);
+	//cudaEventSynchronize(stop);
+	//cudaEventElapsedTime(&timer, start, stop);
+
+	//std::cout << "Error calculation time [ms]: " << timer << std::endl;
+	//std::cout << "No redundant calculation in this scope." << std::endl;
+	cudaFree(inputMatrix1);
+	cudaFree(inputMatrix2);
 }
 
 void runCommandCenter(dim3 gridSize, dim3 redundantGridSize, int arraySize,
 	const float * hostInputMatrix1, const float * hostInputMatrix2,
 	float* hostOutputMatrix, float* hostRedundantMatrix)
 {
+	if (redundantGridSize.x == 0)
+	{
+		runKernelPlusError(gridSize, arraySize, hostInputMatrix1, 
+			hostInputMatrix2, hostOutputMatrix);
+		return;
+	}
 	int arrayBytes = arraySize * sizeof(float);
 	dim3 blockSize(1, 1, 1);
 	cudaStream_t stream[2];
