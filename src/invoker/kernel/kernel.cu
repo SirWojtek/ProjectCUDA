@@ -171,7 +171,6 @@ void runCommandCenter(dim3 gridSize, dim3 redundantGridSize,
 	float * outputMatrix1;
 	float * outputMatrix2;
 
-
 	gpuErrchk(cudaMalloc((void**)&inputMatrix1, arrayBytes));
 	gpuErrchk(cudaMalloc((void**)&inputMatrix2, arrayBytes));
 	gpuErrchk(cudaMalloc((void**)&outputMatrix1, arrayBytes));

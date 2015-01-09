@@ -55,19 +55,20 @@ void ErrorChecker::runAddingKernel()
 	gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
 }
 
-std::pair<unsigned, unsigned> ErrorChecker::getErrorPosition(MatrixData& hostOutputMatrix)
+std::vector<std::pair<unsigned, unsigned>> ErrorChecker::getErrorPosition(MatrixData& hostOutputMatrix)
 {
+	std::vector<std::pair<unsigned, unsigned>> result;
 	runCheckerKernel(hostOutputMatrix.getRawTable());
 
 	for (unsigned i = 0; i < arraySize_; i++)
 	{
 		if (boolOutputTable_[i])
 		{
-			return hostOutputMatrix.positionVector[i];
+			result.push_back(hostOutputMatrix.positionVector[i]);
 		}
 	}
 
-	return std::pair<unsigned, unsigned>(-1, -1);
+	return result;
 }
 
 void ErrorChecker::runCheckerKernel(float* outputTable)

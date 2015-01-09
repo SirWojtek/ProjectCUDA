@@ -20,7 +20,7 @@ __device__ int getIdx_2D_2D()
 __device__ bool compareValues(const float  * const d_inputMatrix1,
 	const float  * const d_inputMatrix2)
 {
-	return (*d_inputMatrix1 - *d_inputMatrix2 > 0.001);
+	return (*d_inputMatrix1 - *d_inputMatrix2 > 1);
 }
 
 __global__ void errorCheckKernel(const float  * const d_inputMatrix1,

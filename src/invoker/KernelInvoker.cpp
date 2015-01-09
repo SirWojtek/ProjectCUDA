@@ -123,24 +123,25 @@ void KernelInvoker::runKernels()
 
 		// using of kernel invocator wrapper
 		runCommandCenter(gridSize, redundantGridSize,
-			hostInputMatrix1_.getRawTable(), hostInputMatrix2_.getRawTable(),
-			hostOutputMatrix_.getRawTable(), redundantData_);
+			hostInputMatrix1_.getRawTable() + i, hostInputMatrix2_.getRawTable() + i,
+			hostOutputMatrix_.getRawTable() + i, redundantData_ + i);
 		gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
 
-		correctErrors(redundantThreadNumber);
+		correctErrors(i, redundantThreadNumber);
 	}
 }
 
-void KernelInvoker::correctErrors(unsigned redundantSize)
+void KernelInvoker::correctErrors(unsigned start, unsigned redundantSize)
 {
-	for (unsigned i = 0; i < redundantSize; i++)
+	for (unsigned i = start; i < start + redundantSize; i++)
 	{
-		if (hostOutputMatrix_.dataVector[i] - redundantData_[i] > 0.001)
+		if (hostOutputMatrix_.dataVector[i] - redundantData_[i] > 0.1)
 		{
 			const unsigned& positionX = hostOutputMatrix_.positionVector[i].first;
 			const unsigned& positionY = hostOutputMatrix_.positionVector[i].second;
 
-			std::cout << "Corrected error on [ " << positionX << " " << positionY << " ]" << std::endl;
+			std::cout << "Corrected error on [ " << positionX << " " << positionY << " ]  ("
+				<< i << ")" << std::endl;
 			hostOutputMatrix_.dataVector[i] = redundantData_[i];
 		}
 	}
@@ -151,16 +152,17 @@ void KernelInvoker::checkForErrors()
 	ErrorChecker checker(hostInputMatrix1_, hostInputMatrix2_, arraySize_);
 	checker.init();
 
-	std::pair<unsigned, unsigned> errorPosition = checker.getErrorPosition(hostOutputMatrix_);
+	auto errorPositionVector = checker.getErrorPosition(hostOutputMatrix_);
 
-	if (errorPosition.first == -1 || errorPosition.second == -1)
+	if (errorPositionVector.empty())
 	{
 		std::cout << "No error detected" << std::endl;
 		return;
 	}
 	
-	std::cout << "Error detected at position [ "
-		<< errorPosition.first << ", " << errorPosition.second << " ]" << std::endl;
+	for (const auto& errorPosition : errorPositionVector)
+		std::cout << "Error detected at position [ "
+			<< errorPosition.first << ", " << errorPosition.second << " ]" << std::endl;
 }
 
 Matrix KernelInvoker::getOutputMatrix(unsigned rowNo, unsigned colNo)

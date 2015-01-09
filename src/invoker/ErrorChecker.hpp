@@ -10,7 +10,7 @@ public:
 	~ErrorChecker();
 
 	void init();
-	std::pair<unsigned, unsigned> getErrorPosition(MatrixData& hostOutputMatrix);
+	std::vector<std::pair<unsigned, unsigned>> getErrorPosition(MatrixData& hostOutputMatrix);
 
 private:
 	void allocateMemory();
