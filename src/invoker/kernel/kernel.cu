@@ -8,7 +8,7 @@
 
 // broken kernel
 __device__ int brokenBlock = 0;
-__device__ int brokenThread = 1;
+__device__ int brokenThread = 15;
 
 __device__ int getErrorIdx_1D_1D()
 {
@@ -119,11 +119,12 @@ void runKernelPlusError(dim3 gridSize, dim3 blockSize, const float  * const d_in
 	kernelPlusError <<< gridSize, blockSize, 0, *stream >>> (d_inputMatrix1, d_inputMatrix2, d_outputMatrix);
 }
 
-void runCommandCenter(dim3 gridSize, dim3 blockSize, int arraySize,
+void runCommandCenter(dim3 gridSize, dim3 redundantGridSize, int arraySize,
 	const float * hostInputMatrix1, const float * hostInputMatrix2,
 	float* hostOutputMatrix, float* hostRedundantMatrix)
 {
 	int arrayBytes = arraySize * sizeof(float);
+	dim3 blockSize(1, 1, 1);
 	cudaStream_t stream[2];
 
 	// input (device)
@@ -164,7 +165,7 @@ void runCommandCenter(dim3 gridSize, dim3 blockSize, int arraySize,
 
 	gpuErrchk(cudaMemcpyAsync((void**)redundantMatrix1, hostInputMatrix1, arrayBytes, cudaMemcpyHostToDevice, stream[1]));
 	gpuErrchk(cudaMemcpyAsync((void**)redundantMatrix2, hostInputMatrix2, arrayBytes, cudaMemcpyHostToDevice, stream[1]));
-	kernel <<< gridSize, blockSize, 0, stream[1] >>> (redundantMatrix1, redundantMatrix2, outputMatrix2);	
+	kernel <<< redundantGridSize, blockSize, 0, stream[1] >>> (redundantMatrix1, redundantMatrix2, outputMatrix2);	
 
 	cudaEventCreate(&stop[1]);
 	cudaEventRecord(stop[1],stream[1]);

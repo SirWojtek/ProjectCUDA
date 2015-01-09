@@ -96,14 +96,37 @@ void KernelInvoker::addZeroValuesOnNotExistingPosition(MatrixData& m1, MatrixDat
 
 void KernelInvoker::runKernels()
 {
-	const dim3 gridSize(arraySize_, 1, 1);
-	const dim3 blockSize(1, 1, 1);
+	for (unsigned i = 0; i < arraySize_; i += maxThreadNumber_)
+	{
+		unsigned remaining = arraySize_ - i;
+		unsigned threadNumber;
+		unsigned redundantThreadNumber;
 
-	// using of kernel invocator wrapper
-	runCommandCenter(gridSize, blockSize, arraySize_,
-		hostInputMatrix1_.getRawTable(), hostInputMatrix2_.getRawTable(),
-		hostOutputMatrix_.getRawTable(), redundantData_);
-	gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
+		if (remaining > maxThreadNumber_)
+		{
+			threadNumber = maxThreadNumber_;
+			redundantThreadNumber = 0;
+		}
+		else
+		{
+			threadNumber = remaining;
+			redundantThreadNumber =
+				maxThreadNumber_ - remaining > remaining ? remaining : maxThreadNumber_ - remaining;
+		}
+
+		std::cout << "Remaining jobs: " << remaining << std::endl;
+		std::cout << "Thread for computation: " << threadNumber << std::endl;
+		std::cout << "Thread for redundant computing: " << redundantThreadNumber << std::endl;
+
+		const dim3 gridSize(threadNumber, 1, 1);
+		const dim3 redundantGridSize(redundantThreadNumber, 1, 1);
+
+		// using of kernel invocator wrapper
+		runCommandCenter(gridSize, redundantGridSize, arraySize_,
+			hostInputMatrix1_.getRawTable(), hostInputMatrix2_.getRawTable(),
+			hostOutputMatrix_.getRawTable(), redundantData_);
+		gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
+	}
 }
 
 void KernelInvoker::checkForErrors()

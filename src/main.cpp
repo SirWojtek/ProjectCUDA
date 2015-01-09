@@ -24,10 +24,13 @@ void run()
 
 	Matrix h_in1("matrixes/bcsstk03.mtx");
 	Matrix h_in2("matrixes/bcsstk03.mtx");
+	h_in2.randomize();
 
 	file << h_in1 << std::endl << std::endl << h_in2 << std::endl << std::endl;
 
-	KernelInvoker invoker(properties.getMaxNumberOfThreads());
+	// KernelInvoker invoker(properties.getMaxNumberOfThreads());
+	KernelInvoker invoker(100);
+
 
 	Matrix result = invoker.compute(h_in1, h_in2);
 	file << result << std::endl;

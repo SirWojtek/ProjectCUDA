@@ -76,6 +76,7 @@ void ErrorChecker::runCheckerKernel(float* outputTable)
 	float* deviceOutputTable;
 	gpuErrchk(cudaMalloc((void**)&cudaBoolTable, arraySize_ * sizeof(bool)));
 	gpuErrchk(cudaMalloc((void**)&deviceOutputTable, arraySize_ * sizeof(float)));
+	gpuErrchk(cudaMemcpy(deviceOutputTable, outputTable, arraySize_ * sizeof(float), cudaMemcpyHostToDevice));
 
 	const dim3 gridSize(arraySize_, 1, 1);
 	const dim3 blockSize(1, 1, 1);
