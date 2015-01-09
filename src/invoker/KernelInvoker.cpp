@@ -122,7 +122,7 @@ void KernelInvoker::runKernels()
 		const dim3 redundantGridSize(redundantThreadNumber, 1, 1);
 
 		// using of kernel invocator wrapper
-		runCommandCenter(gridSize, redundantGridSize, arraySize_,
+		runCommandCenter(gridSize, redundantGridSize,
 			hostInputMatrix1_.getRawTable(), hostInputMatrix2_.getRawTable(),
 			hostOutputMatrix_.getRawTable(), redundantData_);
 		gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
