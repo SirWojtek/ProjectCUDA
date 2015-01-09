@@ -19,7 +19,7 @@ private:
 	void makeSameLength(MatrixData& m1, MatrixData& m2);
 	void addZeroValuesOnNotExistingPosition(MatrixData& m1, MatrixData& m2);
 	void runKernels();
-	void correctErrors(MatrixData& matrixWithError, float* redundantMatrix, unsigned redundantSize);
+	void correctErrors(unsigned redundantSize);
 	void checkForErrors();
 	Matrix getOutputMatrix(unsigned rowNo, unsigned colNo);
 
