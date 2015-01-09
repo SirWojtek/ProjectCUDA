@@ -19,6 +19,7 @@ private:
 	void makeSameLength(MatrixData& m1, MatrixData& m2);
 	void addZeroValuesOnNotExistingPosition(MatrixData& m1, MatrixData& m2);
 	void runKernels();
+	void correctErrors(MatrixData& matrixWithError, float* redundantMatrix, unsigned redundantSize);
 	void checkForErrors();
 	Matrix getOutputMatrix(unsigned rowNo, unsigned colNo);
 
@@ -27,10 +28,5 @@ private:
 	MatrixData hostOutputMatrix_;
 	float * redundantData_;
 	unsigned arraySize_;
-	//float* deviceTable1_;
-	//float* deviceTable2_;
-	//float* deviceOutputTable1_;
-	//float* deviceOutputTable2_;
-
 	unsigned maxThreadNumber_;
 };

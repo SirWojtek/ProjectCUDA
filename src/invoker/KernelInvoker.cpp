@@ -126,6 +126,23 @@ void KernelInvoker::runKernels()
 			hostInputMatrix1_.getRawTable(), hostInputMatrix2_.getRawTable(),
 			hostOutputMatrix_.getRawTable(), redundantData_);
 		gpuErrchk(cudaPeekAtLastError()); // debugging GPU, handy
+
+		correctErrors(hostOutputMatrix_, redundantData_, redundantThreadNumber);
+	}
+}
+
+void KernelInvoker::correctErrors(MatrixData& matrixWithError, float* redundantMatrix, unsigned redundantSize)
+{
+	for (unsigned i = 0; i < redundantSize; i++)
+	{
+		if (matrixWithError.dataVector[i] - redundantMatrix[i] > 0.001)
+		{
+			const unsigned& positionX = matrixWithError.positionVector[i].first;
+			const unsigned& positionY = matrixWithError.positionVector[i].second;
+
+			std::cout << "Corrected error on [ " << positionX << " " << positionY << " ]" << std::endl;
+			matrixWithError.dataVector[i] = redundantMatrix[i];
+		}
 	}
 }
 
@@ -134,7 +151,7 @@ void KernelInvoker::checkForErrors()
 	ErrorChecker checker(hostInputMatrix1_, hostInputMatrix2_, arraySize_);
 	checker.init();
 
-	std::pair<unsigned, unsigned> errorPosition = checker.getErrorPosition(hostOutputMatrix_);;
+	std::pair<unsigned, unsigned> errorPosition = checker.getErrorPosition(hostOutputMatrix_);
 
 	if (errorPosition.first == -1 || errorPosition.second == -1)
 	{
