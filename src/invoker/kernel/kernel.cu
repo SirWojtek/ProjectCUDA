@@ -117,16 +117,16 @@ void runKernelPlusError(dim3 gridSize, int arraySize,
 	float * inputMatrix2;
 	float * outputMatrix;
 	dim3 blockSize(1, 1, 1);
-	//cudaEvent_t start, stop;
-	//cudaEventCreate(&start);
-	//cudaEventCreate(&stop);
-	//float timer;
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	float timer;
 
 	gpuErrchk(cudaMalloc((void**)&inputMatrix1, arrayBytes));
 	gpuErrchk(cudaMalloc((void**)&inputMatrix2, arrayBytes));
 	gpuErrchk(cudaMalloc((void**)&outputMatrix, arrayBytes));
 
-	//cudaEventRecord(start, 0);
+	cudaEventRecord(start, 0);
 
 	gpuErrchk(cudaMemcpy(inputMatrix1, hostInputMatrix1, arrayBytes, cudaMemcpyHostToDevice));
 	gpuErrchk(cudaMemcpy(inputMatrix2, hostInputMatrix2, arrayBytes, cudaMemcpyHostToDevice));
@@ -135,14 +135,16 @@ void runKernelPlusError(dim3 gridSize, int arraySize,
 
 	gpuErrchk(cudaMemcpy(hostOutputMatrix, outputMatrix, arrayBytes, cudaMemcpyDeviceToHost));
 
-	//cudaEventRecord(stop, 0);
-	//cudaEventSynchronize(stop);
-	//cudaEventElapsedTime(&timer, start, stop);
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&timer, start, stop);
 
-	//std::cout << "Error calculation time [ms]: " << timer << std::endl;
-	//std::cout << "No redundant calculation in this scope." << std::endl;
+	std::cout << "Error calculation time [ms]: " << timer << std::endl;
+	std::cout << "No redundant calculation in this scope." << std::endl;
+
 	cudaFree(inputMatrix1);
 	cudaFree(inputMatrix2);
+	cudaFree(outputMatrix);
 }
 
 void runCommandCenter(dim3 gridSize, dim3 redundantGridSize, int arraySize,
