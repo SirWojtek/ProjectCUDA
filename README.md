@@ -127,8 +127,8 @@ bendzasky   |       1.1
 
 Please complete contact list below:
 
-GitHub Nick        |        mail address     |    telephone
--------------------|-------------------------|----------------------
-SirWojtek          |     momatoku@gmail.com  |   781 842 090
-Gettor             |    sdobroc@gmail.com    |   601 553 817
-bendzasky          |    bendzasky@gmail.com  |   509 409 563  
+GitHub Nick        |        mail address    
+-------------------|----------------------------
+SirWojtek          |     momatoku@gmail.com 
+Gettor             |     sdobroc@gmail.com   
+bendzasky          |     bendzasky@gmail.com 
