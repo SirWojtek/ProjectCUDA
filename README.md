@@ -84,45 +84,6 @@ Struct defining single cell:
 - should check for different values in input vectors on same index,
 - should set field in output vector to 'false' when detect difference
 
-###Tasks###
-
-####To do####
-
-1. Kernel manager implementation
-    - kernel manager task is to divide task to kernels, basing on input data size,
-    - kernel manager should have functionality to trigger additional redundancy computing to check for errors,
-2. Async kernel execution
-    - error injection should be in separate kernel execution (not included in time calculation),
-    - adding with error and redundant adding should be executed paralel (CUDA API should have async method) [async kernel execution is described in cuda c programming guide 3.2.5., unfortunately it only works on devices with compute capability 2.x and mine has 1.4- bendzasky],
-    - time calculation should be done for adding with error and redundant adding,
-3. Matrix randomize
-	- shuffle matrix (all values)
-	- DONE - Randomized matrix will have the same columns + rows but with mixed values. These columns and rows will be on the same CellInfo index as before randomization but with different value (from another CellInfo index)
-4. Error recognition
-	- read error checker description above
-5. Run redundant computing when kernels are free
-	-  detecting number of kernels,
-	-  depends of kernel number divide computing task to parts,
-	-  when there are free kernels run redundant computation
-
-Please assign yourself to one task.
-
-
-**Next deadline: 16.01.2015**
-If there is any question, you are free to contact me:)
-
-Person       |     Task
--------------|----------------
-SirWojtek    | 1
-Gettor       | 2
-bendzasky    | 5
-
-Person      |  Computing Capability
-------------|----------------------
-SirWojtek   |          
-Gettor      |         
-bendzasky   |       1.1 
-
 ###Contact###
 
 Please complete contact list below:
